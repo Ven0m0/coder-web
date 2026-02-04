@@ -9,6 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Settings as SettingsIcon, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { tokenOptimizer } from '@/utils/tokenOptimizer';
+import { SecureStorage } from '@/utils/secureStorage';
 
 interface Message {
   role: 'user' | 'agent';
@@ -48,7 +49,7 @@ const Index = () => {
     console.log('Security: Content Security Policy should be enforced by the server');
   }, []);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     // Sanitize user input
     const sanitizedContent = sanitizeMessage(content);
     
@@ -60,9 +61,14 @@ const Index = () => {
     
     setMessages(prev => [...prev, userMsg]);
     
+    // Get the current provider
+    const currentProvider = localStorage.getItem('opencode_provider') || 'jules';
+    
+    // In a real implementation, we would use the API key here
+    // For now, we'll just simulate the process
     const agentThinking: Message = { 
       role: 'agent', 
-      content: "I'll handle that using the filesystem MCP server and my current LLM provider.", 
+      content: `I'll handle that using the ${currentProvider} provider and filesystem MCP server.`, 
       status: 'thinking' 
     };
     
@@ -99,7 +105,7 @@ const Index = () => {
                   variant="ghost" 
                   size="sm" 
                   className="bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 text-xs h-8 px-2"
-                  onClick={() => {
+                  onClick={async () => {
                     const stats = tokenOptimizer.getCacheStats();
                     setLogs(prev => [...prev, `Token cache stats: ${stats.size}/${stats.maxSize} items`]);
                   }}

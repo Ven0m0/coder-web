@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { tokenOptimizer } from '@/utils/tokenOptimizer';
+import { SecureStorage } from '@/utils/secureStorage';
 
 interface Message {
   role: 'user' | 'agent';

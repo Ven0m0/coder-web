@@ -5,6 +5,7 @@ import { Globe, Key, Check, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SecureStorage } from '@/utils/secureStorage';
 
 const PROVIDERS = [
   { id: 'anthropic', name: 'Anthropic (Claude)', icon: 'https://www.anthropic.com/favicon.ico' },
@@ -15,90 +16,36 @@ const PROVIDERS = [
   { id: 'openai', name: 'OpenAI', icon: 'https://openai.com/favicon.ico' }
 ];
 
-// Encryption utility functions
-const encryptData = async (data: string, key: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(data);
-  const keyBuffer = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(key.padEnd(32, '0').slice(0, 32)),
-    { name: "AES-GCM" },
-    false,
-    ["encrypt"]
-  );
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    keyBuffer,
-    dataBuffer
-  );
-  const encryptedArray = new Uint8Array(encrypted);
-  const result = new Uint8Array(iv.length + encryptedArray.length);
-  result.set(iv, 0);
-  result.set(encryptedArray, iv.length);
-  return btoa(String.fromCharCode(...result));
-};
-
-const decryptData = async (encryptedData: string, key: string): Promise<string> => {
-  const decoder = new TextDecoder();
-  const encryptedBuffer = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-  const iv = encryptedBuffer.slice(0, 12);
-  const data = encryptedBuffer.slice(12);
-  const keyBuffer = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(key.padEnd(32, '0').slice(0, 32)),
-    { name: "AES-GCM" },
-    false,
-    ["decrypt"]
-  );
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
-    keyBuffer,
-    data
-  );
-  return decoder.decode(decrypted);
-};
-
 const ProviderManager = () => {
   const [selectedProvider, setSelectedProvider] = useState('anthropic');
   const [apiKey, setApiKey] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [encryptionKey, setEncryptionKey] = useState('');
 
   useEffect(() => {
-    // Generate a session-based encryption key
-    const sessionKey = sessionStorage.getItem('opencode_encryption_key');
-    if (sessionKey) {
-      setEncryptionKey(sessionKey);
-    } else {
-      const newKey = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-      sessionStorage.setItem('opencode_encryption_key', newKey);
-      setEncryptionKey(newKey);
-    }
-    
     // Load saved provider if exists
-    const savedProvider = localStorage.getItem('opencode_provider');
-    if (savedProvider) {
-      setSelectedProvider(savedProvider);
-    }
+    const loadSavedData = async () => {
+      const savedProvider = localStorage.getItem('opencode_provider');
+      if (savedProvider) {
+        setSelectedProvider(savedProvider);
+      }
+    };
+    
+    loadSavedData();
   }, []);
 
   const handleSave = async () => {
-    if (!apiKey || !encryptionKey) return;
+    if (!apiKey) return;
     
     try {
-      // Encrypt the API key before storing
-      const encryptedKey = await encryptData(apiKey, encryptionKey);
-      localStorage.setItem(`opencode_api_key_${selectedProvider}`, encryptedKey);
+      // Store the API key securely
+      await SecureStorage.setItem(`opencode_api_key_${selectedProvider}`, apiKey);
       localStorage.setItem('opencode_provider', selectedProvider);
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       setApiKey('');
     } catch (error) {
-      console.error('Failed to encrypt API key:', error);
+      console.error('Failed to store API key:', error);
     }
   };
 
