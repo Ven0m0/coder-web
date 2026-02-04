@@ -6,19 +6,24 @@ import Terminal from '@/components/Terminal';
 import FileExplorer from '@/components/FileExplorer';
 import SettingsPanel from '@/components/SettingsPanel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { tokenOptimizer } from '@/utils/tokenOptimizer';
 
 interface Message {
   role: 'user' | 'agent';
   content: string;
   status?: 'thinking' | 'executing' | 'done';
+  optimized?: boolean;
 }
 
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'agent', content: "Hello! I'm your OpenCode agent. I'm currently configured with Jules (Google) and have ripgrep, fd, ast-grep, and gh-cli ready. How can I help you today?" }
+    { 
+      role: 'agent', 
+      content: "Hello! I'm your OpenCode agent. I'm currently configured with Jules (Google) and have ripgrep, fd, ast-grep, and gh-cli ready. How can I help you today?" 
+    }
   ]);
   const [logs, setLogs] = useState<string[]>([
     "opencode-cli v1.0.4 initialized",
@@ -30,23 +35,28 @@ const Index = () => {
   ]);
 
   const handleSendMessage = (content: string) => {
-    const userMsg: Message = { role: 'user', content };
+    const userMsg: Message = { 
+      role: 'user', 
+      content,
+      optimized: content !== tokenOptimizer.optimizeContent(content)
+    };
+    
     setMessages(prev => [...prev, userMsg]);
-
+    
     const agentThinking: Message = { 
       role: 'agent', 
-      content: "I'll handle that using the filesystem MCP server and my current LLM provider.",
-      status: 'thinking'
+      content: "I'll handle that using the filesystem MCP server and my current LLM provider.", 
+      status: 'thinking' 
     };
+    
     setMessages(prev => [...prev, agentThinking]);
-
+    
     setTimeout(() => {
       setLogs(prev => [...prev, `Executing command: rg "${content}" .`]);
       setLogs(prev => [...prev, "Found 3 matches in src/components/"]);
       
       setTimeout(() => {
         setLogs(prev => [...prev, "Task completed successfully."]);
-        
         setMessages(prev => {
           const newMsgs = [...prev];
           const last = newMsgs[newMsgs.length - 1];
@@ -61,15 +71,25 @@ const Index = () => {
   return (
     <div className="h-screen w-full flex bg-[#0c0c0c] overflow-hidden relative">
       <FileExplorer />
-      
       <div className="flex-1 flex flex-col min-w-0">
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel defaultSize={70} minSize={30}>
             <div className="relative h-full">
-              <ChatInterface 
-                messages={messages} 
-                onSendMessage={handleSendMessage} 
-              />
+              <ChatInterface messages={messages} onSendMessage={handleSendMessage} />
+              <div className="absolute top-4 right-24 z-20 flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 text-xs h-8 px-2"
+                  onClick={() => {
+                    const stats = tokenOptimizer.getCacheStats();
+                    setLogs(prev => [...prev, `Token cache stats: ${stats.size}/${stats.maxSize} items`]);
+                  }}
+                >
+                  <Zap size={14} className="mr-1" />
+                  Cache Stats
+                </Button>
+              </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -80,19 +100,13 @@ const Index = () => {
               </Button>
             </div>
           </ResizablePanel>
-          
           <ResizableHandle className="bg-zinc-800 h-1 hover:bg-indigo-500 transition-colors" />
-          
           <ResizablePanel defaultSize={30} minSize={15}>
             <Terminal logs={logs} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-
-      <SettingsPanel 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-      />
+      <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 };
