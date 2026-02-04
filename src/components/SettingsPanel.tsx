@@ -8,6 +8,7 @@ import MCPManager from './MCPManager';
 import ProviderManager from './ProviderManager';
 import SystemTools from './SystemTools';
 import TokenOptimizerPanel from './TokenOptimizerPanel';
+import PluginManager from './PluginManager';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -38,6 +39,8 @@ const SettingsPanel = ({ isOpen, onClose }: SettingsPanelProps) => {
             <SystemTools />
             <div className="h-px bg-zinc-800" />
             <MCPManager />
+            <div className="h-px bg-zinc-800" />
+            <PluginManager />
             <div className="h-px bg-zinc-800" />
             <TokenOptimizerPanel />
           </div>

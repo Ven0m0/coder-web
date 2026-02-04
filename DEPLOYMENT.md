@@ -1,4 +1,4 @@
-# Self-Hosting Guide for OpenCode CLI (Bun + Docker)
+# Self-Hosting Guide for OpenCode CLI (Bun + Docker + Plugins)
 
 ## Why Bun?
 
@@ -8,6 +8,21 @@ Bun is a modern JavaScript runtime that's significantly faster than Node.js for:
 - **Runtime performance**: Lower memory footprint and faster execution
 
 Based on [bun.com](https://bun.com/docs/guides/ecosystem/docker) and [docs.docker.com](https://docs.docker.com/guides/bun/containerize/) best practices.
+
+## Why Biome?
+
+Biome is a fast, all-in-one tool for linting and formatting JavaScript, TypeScript, and more. It's:
+- **15x faster than ESLint** and **25x faster than Prettier**
+- **Single binary** with no plugins to manage
+- **Rust-based** for maximum performance
+- **Unified configuration** for linting and formatting
+
+## Plugin System
+
+OpenCode CLI supports a Claude Code-compatible plugin system:
+- **Commands**: Extend CLI functionality with custom commands
+- **Agents**: Add specialized AI agents for different tasks
+- **Skills**: Reusable components that can be shared between agents
 
 ## Prerequisites
 - A VPS (DigitalOcean $6/mo, Hetzner, Linode, etc.)
@@ -56,6 +71,34 @@ curl http://localhost
 docker stats opencode-cli
 ```
 
+## Plugin Management
+
+### Adding Plugins
+Plugins can be added through the UI or by placing them in the `plugins` directory:
+
+```bash
+# Place plugin files in the plugins directory
+cp my-plugin.js /opt/opencode-cli/plugins/
+
+# Restart the container to load new plugins
+docker-compose restart opencode-cli
+```
+
+### Plugin Structure
+Plugins should export a default object with this structure:
+```javascript
+const plugin = {
+  name: "my-plugin",
+  version: "1.0.0",
+  description: "A sample plugin",
+  commands: [...],
+  agents: [...],
+  skills: [...]
+};
+
+export default plugin;
+```
+
 ## Domain Configuration (Optional)
 
 ### Setup Nginx Reverse Proxy
@@ -83,6 +126,12 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-XSS-Protection "1; mode=block" always;
     }
+    
+    # Serve plugins directory
+    location /plugins {
+        alias /var/www/opencode-cli/plugins;
+        expires 1d;
+    }
 }
 ```
 
@@ -95,6 +144,35 @@ sudo systemctl restart nginx
 # Get SSL certificate with Certbot
 sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+```
+
+## Development Workflow
+
+### Local Development with Bun
+```bash
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+
+# Run linting
+bun run lint
+
+# Fix linting issues
+bun run lint:fix
+
+# Format code
+bun run format
+```
+
+### Building for Production
+```bash
+# Build the application
+bun run build
+
+# Preview the build
+bun run preview
 ```
 
 ## Alternative Deployment Options
@@ -169,6 +247,7 @@ docker run --rm -v opencode_opencode-data:/data -v $(pwd):/backup \
 The Dockerfile already includes:
 - **Multi-stage build**: Smaller final image
 - **Bun for dependencies**: 20-100x faster installs
+- **Biome for linting**: 15x faster than ESLint
 - **Health checks**: Automatic monitoring
 - **Resource limits**: Prevents resource exhaustion
 
@@ -247,6 +326,7 @@ sudo netstat -tulpn | grep :80
 - [Render Bun Deployment](https://render.com/docs/deploy-bun-docker)
 - [Clever Cloud Bun Support](https://www.clever.cloud/developers/doc/applications/nodejs/)
 - [Self-Hosting Guide](https://github.com/mikeroyal/Self-Hosting-Guide)
+- [Biome Documentation](https://biomejs.dev/)
 
 ## Quick Reference
 

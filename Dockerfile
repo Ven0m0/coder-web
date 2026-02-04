@@ -4,7 +4,7 @@ FROM oven/bun:1 AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb* ./
+COPY package.json bun.lockb* biome.json ./
 
 # Install dependencies using Bun (much faster than npm/pnpm)
 RUN bun install --frozen-lockfile
@@ -12,14 +12,20 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Run Biome checks
+RUN bun run lint
+
 # Build the application using Bun
 RUN bun run build
 
-# Production stage using Nginx
+# Production stage
 FROM nginx:alpine
 
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Create directory for plugins
+RUN mkdir -p /usr/share/nginx/html/plugins
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
