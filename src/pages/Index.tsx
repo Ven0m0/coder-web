@@ -44,9 +44,28 @@ const Index = () => {
 
   // Add security headers
   useEffect(() => {
-    // In a real app, these would be set by the server
-    // For client-side apps, we rely on proper CSP and sanitization
-    console.log('Security: Content Security Policy should be enforced by the server');
+    // Set additional security headers
+    const setSecurityHeaders = () => {
+      // X-Content-Type-Options
+      const contentTypeOptions = document.createElement('meta');
+      contentTypeOptions.httpEquiv = 'X-Content-Type-Options';
+      contentTypeOptions.content = 'nosniff';
+      document.head.appendChild(contentTypeOptions);
+
+      // X-Frame-Options
+      const frameOptions = document.createElement('meta');
+      frameOptions.httpEquiv = 'X-Frame-Options';
+      frameOptions.content = 'DENY';
+      document.head.appendChild(frameOptions);
+
+      // Referrer-Policy
+      const referrerPolicy = document.createElement('meta');
+      referrerPolicy.httpEquiv = 'Referrer-Policy';
+      referrerPolicy.content = 'no-referrer';
+      document.head.appendChild(referrerPolicy);
+    };
+
+    setSecurityHeaders();
   }, []);
 
   const handleSendMessage = async (content: string) => {

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Package, Play, Trash2, Plus } from 'lucide-react';
+import { Upload, Package, Play, Trash2, Plus, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getAllPlugins, getCommands, getAgents, getSkills } from '@/plugins/index';
+import { getAllPlugins, getCommands, getAgents, getSkills, loadPluginSecure } from '@/plugins/index';
+import { toast } from 'sonner';
 
 const PluginManager = () => {
   const [plugins, setPlugins] = useState<any[]>([]);
@@ -15,6 +16,7 @@ const PluginManager = () => {
   const [agents, setAgents] = useState<any[]>([]);
   const [skills, setSkills] = useState<any[]>([]);
   const [newPluginUrl, setNewPluginUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadPlugins();
@@ -27,20 +29,30 @@ const PluginManager = () => {
     setSkills(getSkills());
   };
 
-  const handleAddPlugin = () => {
+  const handleAddPlugin = async () => {
     if (!newPluginUrl) return;
     
-    // In a real implementation, this would load the plugin from the URL
-    console.log(`Adding plugin from: ${newPluginUrl}`);
-    setNewPluginUrl('');
-    // Refresh the plugin list
-    loadPlugins();
+    setLoading(true);
+    try {
+      // Use the secure plugin loading mechanism
+      await loadPluginSecure(newPluginUrl);
+      toast.success(`Plugin added successfully from: ${newPluginUrl}`);
+      setNewPluginUrl('');
+      // Refresh the plugin list
+      loadPlugins();
+    } catch (error) {
+      console.error('Failed to add plugin:', error);
+      toast.error(`Failed to add plugin: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemovePlugin = (pluginName: string) => {
     // In a real implementation, this would remove the plugin
     console.log(`Removing plugin: ${pluginName}`);
     loadPlugins();
+    toast.info(`Plugin ${pluginName} removed`);
   };
 
   return (
@@ -75,20 +87,29 @@ const PluginManager = () => {
                   onChange={(e) => setNewPluginUrl(e.target.value)}
                   placeholder="Enter plugin URL or local path"
                   className="bg-zinc-950 border-zinc-800 text-zinc-200 text-xs flex-1"
+                  disabled={loading}
                 />
                 <Button 
                   size="sm" 
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
                   onClick={handleAddPlugin}
+                  disabled={loading || !newPluginUrl}
                 >
-                  <Plus size={14} className="mr-1" />
-                  Add
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Plus size={14} className="mr-1" />
+                      Add
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-zinc-500">
-              Add plugins from URLs or local paths. Plugins can include commands, agents, and skills.
-            </p>
+            <div className="flex items-center gap-2 text-[10px] text-amber-500 bg-amber-500/10 p-2 rounded">
+              <AlertTriangle size={12} />
+              <span>Only plugins from trusted sources will be loaded. All plugins are sandboxed for security.</span>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -112,6 +133,7 @@ const PluginManager = () => {
                         <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-zinc-800 text-zinc-400 border-none">
                           v{plugin.version}
                         </Badge>
+                        <CheckCircle size={12} className="text-emerald-500" />
                       </div>
                       <p className="text-[10px] text-zinc-500 mt-1">{plugin.description}</p>
                     </div>
