@@ -9,8 +9,6 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Settings as SettingsIcon, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { tokenOptimizer } from '@/utils/tokenOptimizer';
-import { getApiKey } from '@/utils/secureStorage';
-import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'agent';
