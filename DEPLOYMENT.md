@@ -1,11 +1,21 @@
-# Self-Hosting Guide for OpenCode CLI
+# Self-Hosting Guide for OpenCode CLI (Bun + Docker)
+
+## Why Bun?
+
+Bun is a modern JavaScript runtime that's significantly faster than Node.js for:
+- **Package installation**: 20-100x faster than npm/pnpm
+- **Build times**: Optimized for Vite and modern tooling
+- **Runtime performance**: Lower memory footprint and faster execution
+
+Based on [bun.com](https://bun.com/docs/guides/ecosystem/docker) and [docs.docker.com](https://docs.docker.com/guides/bun/containerize/) best practices.
 
 ## Prerequisites
-- A VPS (DigitalOcean, Hetzner, Linode, etc.)
+- A VPS (DigitalOcean $6/mo, Hetzner, Linode, etc.)
 - A domain name (optional but recommended)
 - SSH access to your VPS
+- Docker and Docker Compose installed
 
-## Option 1: Docker Deployment (Recommended)
+## Quick Start (Docker + Bun)
 
 ### 1. Prepare Your VPS
 ```bash
@@ -21,19 +31,36 @@ sudo usermod -aG docker $USER
 sudo apt install nginx -y
 ```
 
-### 2. Deploy Your App
+### 2. Clone and Deploy
 ```bash
-# Clone or upload your code to the VPS
+# Clone your repository
 git clone <your-repo-url> /opt/opencode-cli
 cd /opt/opencode-cli
 
-# Build and start with Docker Compose
+# Build and start with Docker Compose (uses Bun for faster builds)
 docker-compose up -d --build
+
+# Check logs
+docker-compose logs -f opencode-cli
 ```
 
-### 3. Configure Domain (Optional)
+### 3. Verify Deployment
 ```bash
-# Create nginx configuration for reverse proxy
+# Check container status
+docker-compose ps
+
+# Test the application
+curl http://localhost
+
+# View resource usage
+docker stats opencode-cli
+```
+
+## Domain Configuration (Optional)
+
+### Setup Nginx Reverse Proxy
+```bash
+# Create nginx configuration
 sudo nano /etc/nginx/sites-available/opencode-cli
 ```
 
@@ -50,6 +77,11 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
     }
 }
 ```
@@ -65,126 +97,174 @@ sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 ```
 
-## Option 2: Direct Nginx Deployment
+## Alternative Deployment Options
 
-### 1. Build the App Locally
-```bash
-npm run build
-```
+### Option 1: Render (Bun Native)
+[Render supports Bun natively](https://render.com/docs/deploy-bun-docker), so you can deploy without Docker:
 
-### 2. Upload to VPS
-```bash
-# Upload dist folder to VPS
-scp -r dist/* user@your-vps-ip:/var/www/opencode-cli/
-```
+1. Fork your repository
+2. Create a new **Web Service** on Render
+3. Set **Language** to `Docker` (or `Bun` if available)
+4. Render will auto-detect and deploy
 
-### 3. Configure Nginx
-```bash
-# Create nginx configuration
-sudo nano /etc/nginx/sites-available/opencode-cli
-```
+### Option 2: Clever Cloud
+[Clever Cloud supports Node.js & Bun runtimes](https://www.clever.cloud/developers/doc/applications/nodejs/):
 
-Add this configuration:
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com www.your-domain.com;
-    
-    root /var/www/opencode-cli;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
+1. Create a new application on Clever Cloud
+2. Link your GitHub repository
+3. Set runtime to `Bun`
+4. Deploy automatically
+
+### Option 3: Direct VPS with Bun
+If you prefer running Bun directly without Docker:
 
 ```bash
-# Enable and restart
-sudo ln -s /etc/nginx/sites-available/opencode-cli /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
 
-# Set permissions
-sudo chown -R www-data:www-data /var/www/opencode-cli
-```
+# Clone and build
+cd /opt/opencode-cli
+bun install
+bun run build
 
-## Option 3: Static Hosting Services
-
-You can also deploy to various static hosting platforms:
-
-### Vercel
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-```
-
-### Netlify
-```bash
-# Install Netlify CLI
-npm i -g netlify-cli
-
-# Build and deploy
-npm run build
-netlify deploy --prod --dir=dist
-```
-
-### GitHub Pages
-1. Go to repository Settings → Pages
-2. Set source to `gh-pages` branch
-3. Add deploy script to package.json:
-```json
-"scripts": {
-  "deploy": "npm run build && gh-pages -d dist"
-}
+# Serve with a simple HTTP server
+bunx serve dist -p 80
 ```
 
 ## Maintenance
 
-### Update the App
+### Update the Application
 ```bash
-# Docker method
+# Docker method (recommended)
 cd /opt/opencode-cli
 git pull
 docker-compose down
 docker-compose up -d --build
 
-# Direct method
-cd /var/www/opencode-cli
-git pull
-npm run build
-sudo systemctl restart nginx
+# The build will use Bun, making it much faster than npm/pnpm
 ```
 
-### Monitor Logs
+### Monitor Performance
 ```bash
-# Docker logs
-docker-compose logs -f
+# View container logs
+docker-compose logs -f opencode-cli
 
-# Nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
+# Monitor resource usage
+docker stats opencode-cli
+
+# Check health status
+docker inspect opencode-cli | grep -A 10 Health
 ```
 
-## Security Recommendations
+### Backup Configuration
+```bash
+# Backup Docker volumes and configs
+docker run --rm -v opencode_opencode-data:/data -v $(pwd):/backup \
+  alpine tar czf /backup/opencode-backup-$(date +%Y%m%d).tar.gz /data
+```
+
+## Performance Optimization
+
+### Bun-Specific Optimizations
+The Dockerfile already includes:
+- **Multi-stage build**: Smaller final image
+- **Bun for dependencies**: 20-100x faster installs
+- **Health checks**: Automatic monitoring
+- **Resource limits**: Prevents resource exhaustion
+
+### Additional Optimizations
+```yaml
+# Add to docker-compose.yml for production
+services:
+  opencode-cli:
+    # ... existing config ...
+    environment:
+      - NODE_ENV=production
+      - BUN_RUNTIME_TRANSPORT=native  # Use native transport
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+## Security Best Practices
 
 1. **Keep system updated**: `sudo apt update && sudo apt upgrade -y`
 2. **Use SSH keys**: Disable password authentication
-3. **Configure firewall**: `sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp && sudo ufw enable`
-4. **Regular backups**: Set up automated backups of your data
-5. **Monitor resources**: Use tools like htop or docker stats
+3. **Configure firewall**: 
+   ```bash
+   sudo ufw allow 22/tcp
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw enable
+   ```
+4. **Regular backups**: Set up automated backups
+5. **Monitor resources**: Use `docker stats` and `docker-compose logs`
+6. **Update images regularly**: `docker-compose pull && docker-compose up -d`
+
+## Troubleshooting
+
+### Build Issues
+```bash
+# Clear Docker cache and rebuild
+docker-compose down
+docker system prune -a
+docker-compose up -d --build
+```
+
+### Container Won't Start
+```bash
+# Check logs
+docker-compose logs opencode-cli
+
+# Inspect container
+docker inspect opencode-cli
+
+# Check port conflicts
+sudo netstat -tulpn | grep :80
+```
+
+### Performance Issues
+```bash
+# Increase Docker resources (in Docker Desktop settings)
+# Or adjust limits in docker-compose.yml
+```
+
+## Cost Comparison
+
+| Provider | Monthly Cost | Setup Time | Bun Support |
+|----------|-------------|------------|-------------|
+| DigitalOcean | $6 | 5 min | ✅ Docker |
+| Hetzner | $4.50 | 5 min | ✅ Docker |
+| Render | Free-$7 | 2 min | ✅ Native |
+| Clever Cloud | Free-$15 | 2 min | ✅ Native |
 
 ## Resources
 
+- [Bun Docker Guide](https://bun.com/docs/guides/ecosystem/docker)
+- [Docker Bun Documentation](https://docs.docker.com/guides/bun/containerize/)
+- [Render Bun Deployment](https://render.com/docs/deploy-bun-docker)
+- [Clever Cloud Bun Support](https://www.clever.cloud/developers/doc/applications/nodejs/)
 - [Self-Hosting Guide](https://github.com/mikeroyal/Self-Hosting-Guide)
-- [Docker Documentation](https://docs.docker.com/)
-- [Nginx Documentation](https://nginx.org/en/docs/)
+
+## Quick Reference
+
+```bash
+# Start
+docker-compose up -d
+
+# Stop
+docker-compose down
+
+# Restart
+docker-compose restart
+
+# View logs
+docker-compose logs -f
+
+# Rebuild
+docker-compose up -d --build
+
+# Update
+git pull && docker-compose up -d --build

@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   opencode-cli:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: opencode-cli
     restart: unless-stopped
     ports:
@@ -11,6 +13,15 @@ services:
       - NODE_ENV=production
     networks:
       - opencode-network
+    # Resource limits for better performance
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
 networks:
   opencode-network:
