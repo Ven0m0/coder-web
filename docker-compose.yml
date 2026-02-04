@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  opencode-cli:
+    build: .
+    container_name: opencode-cli
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - opencode-network
+
+networks:
+  opencode-network:
+    driver: bridge
