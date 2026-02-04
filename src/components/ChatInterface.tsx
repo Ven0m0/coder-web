@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { tokenOptimizer } from '@/utils/tokenOptimizer';
+import { secureApiRequest } from '@/utils/apiClient';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'agent';
