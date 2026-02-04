@@ -8,6 +8,7 @@ import MCPManager from './MCPManager';
 import ProviderManager from './ProviderManager';
 import SystemTools from './SystemTools';
 import TokenOptimizerPanel from './TokenOptimizerPanel';
+import PluginManager from './PluginManager';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -40,6 +41,8 @@ const SettingsPanel = ({ isOpen, onClose }: SettingsPanelProps) => {
             <MCPManager />
             <div className="h-px bg-zinc-800" />
             <TokenOptimizerPanel />
+            <div className="h-px bg-zinc-800" />
+            <PluginManager />
           </div>
         </ScrollArea>
         <div className="px-6 py-4 border-t border-zinc-800 bg-zinc-900/30 flex justify-end">
