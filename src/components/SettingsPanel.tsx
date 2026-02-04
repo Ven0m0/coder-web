@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MCPManager from './MCPManager';
 import ProviderManager from './ProviderManager';
+import SystemTools from './SystemTools';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -33,6 +34,8 @@ const SettingsPanel = ({ isOpen, onClose }: SettingsPanelProps) => {
         <ScrollArea className="flex-1 p-6">
           <div className="space-y-10">
             <ProviderManager />
+            <div className="h-px bg-zinc-800" />
+            <SystemTools />
             <div className="h-px bg-zinc-800" />
             <MCPManager />
           </div>

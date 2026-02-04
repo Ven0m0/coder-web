@@ -18,13 +18,14 @@ interface Message {
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'agent', content: "Hello! I'm your OpenCode agent. I'm currently configured with Anthropic Claude and have 2 MCP servers active. How can I help you today?" }
+    { role: 'agent', content: "Hello! I'm your OpenCode agent. I'm currently configured with Jules (Google) and have ripgrep, fd, ast-grep, and gh-cli ready. How can I help you today?" }
   ]);
   const [logs, setLogs] = useState<string[]>([
     "opencode-cli v1.0.4 initialized",
+    "Tools detected: rg, fd, ast-grep, repomix, gh",
     "MCP: bun runtime detected",
     "MCP: uv runtime detected",
-    "Connected to Anthropic API...",
+    "Connected to Jules (Google) API...",
     "Ready for agentic tasks."
   ]);
 
@@ -40,8 +41,8 @@ const Index = () => {
     setMessages(prev => [...prev, agentThinking]);
 
     setTimeout(() => {
-      setLogs(prev => [...prev, `Executing MCP command: filesystem.read_dir(".")`]);
-      setLogs(prev => [...prev, "MCP Response: [src, package.json, ...]"]);
+      setLogs(prev => [...prev, `Executing command: rg "${content}" .`]);
+      setLogs(prev => [...prev, "Found 3 matches in src/components/"]);
       
       setTimeout(() => {
         setLogs(prev => [...prev, "Task completed successfully."]);
@@ -49,7 +50,7 @@ const Index = () => {
         setMessages(prev => {
           const newMsgs = [...prev];
           const last = newMsgs[newMsgs.length - 1];
-          last.content = "I've analyzed your project using the MCP servers. I'm ready to proceed with the implementation.";
+          last.content = "I've used ripgrep to search the codebase and analyzed the results. I'm ready to proceed with the implementation.";
           last.status = 'done';
           return newMsgs;
         });

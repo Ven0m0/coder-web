@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const PROVIDERS = [
   { id: 'anthropic', name: 'Anthropic (Claude)', icon: 'https://www.anthropic.com/favicon.ico' },
   { id: 'google', name: 'Google (Gemini)', icon: 'https://www.gstatic.com/lamda/images/favicon_v1_150160d13ffabc72b30.png' },
+  { id: 'jules', name: 'Jules (Google)', icon: 'https://www.gstatic.com/lamda/images/favicon_v1_150160d13ffabc72b30.png' },
   { id: 'openrouter', name: 'OpenRouter', icon: 'https://openrouter.ai/favicon.ico' },
   { id: 'cursor', name: 'Cursor (Zai)', icon: 'https://cursor.sh/favicon.ico' },
   { id: 'openai', name: 'OpenAI', icon: 'https://openai.com/favicon.ico' }
@@ -52,11 +53,11 @@ const ProviderManager = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">API Key</label>
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">API Key / Auth Token</label>
           <div className="relative">
             <Input 
               type="password"
-              placeholder={`Enter your ${PROVIDERS.find(p => p.id === selectedProvider)?.name} API key`}
+              placeholder={`Enter your ${PROVIDERS.find(p => p.id === selectedProvider)?.name} credentials`}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="bg-zinc-900 border-zinc-800 text-zinc-300 h-11 pl-10"
@@ -83,7 +84,7 @@ const ProviderManager = () => {
         </Button>
 
         <p className="text-[10px] text-zinc-500 text-center leading-relaxed">
-          Your API keys are stored locally and never leave your browser. OpenCode CLI uses these to authenticate with the selected provider.
+          Your credentials are stored locally and never leave your browser. OpenCode CLI uses these to authenticate with the selected provider.
         </p>
       </div>
     </div>
