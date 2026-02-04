@@ -7,6 +7,21 @@ interface TerminalProps {
   logs: string[];
 }
 
+// Function to filter sensitive information from logs
+const filterLog = (log: string): string => {
+  return log
+    // Remove file paths that might expose system structure
+    .replace(/\/[^\s]*\/[^\s]*/g, '[PATH_REDACTED]')
+    // Remove potential API keys (patterns like sk-... or api_...)
+    .replace(/(sk|api)_[a-zA-Z0-9]{10,}/g, '[API_KEY_REDACTED]')
+    // Remove potential tokens
+    .replace(/(token|key|secret)[\s]*[=:][\s]*["']?[a-zA-Z0-9\-_]{10,}["']?/gi, '[CREDENTIAL_REDACTED]')
+    // Remove email addresses
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]')
+    // Remove IP addresses
+    .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP_REDACTED]');
+};
+
 const Terminal = ({ logs }: TerminalProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +44,7 @@ const Terminal = ({ logs }: TerminalProps) => {
         {logs.map((log, i) => (
           <div key={i} className="whitespace-pre-wrap break-all">
             <span className="text-emerald-500 mr-2">❯</span>
-            {log}
+            {filterLog(log)}
           </div>
         ))}
         {logs.length === 0 && (

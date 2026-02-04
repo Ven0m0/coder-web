@@ -1,20 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Package, Play, Trash2, Plus } from 'lucide-react';
+import { Upload, Package, Play, Trash2, Plus, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getAllPlugins, getCommands, getAgents, getSkills } from '@/plugins/index';
+import { useToast } from "@/components/ui/use-toast";
+import { getAllPlugins, getCommands, getAgents, getSkills, loadPlugin } from '@/plugins/index';
 
 const PluginManager = () => {
+  const { toast } = useToast();
   const [plugins, setPlugins] = useState<any[]>([]);
   const [commands, setCommands] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [skills, setSkills] = useState<any[]>([]);
   const [newPluginUrl, setNewPluginUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadPlugins();
@@ -27,19 +30,48 @@ const PluginManager = () => {
     setSkills(getSkills());
   };
 
-  const handleAddPlugin = () => {
-    if (!newPluginUrl) return;
+  const handleAddPlugin = async () => {
+    if (!newPluginUrl) {
+      toast({
+        title: "Plugin URL Required",
+        description: "Please enter a plugin URL or path.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     
-    // In a real implementation, this would load the plugin from the URL
-    console.log(`Adding plugin from: ${newPluginUrl}`);
-    setNewPluginUrl('');
-    // Refresh the plugin list
-    loadPlugins();
+    try {
+      await loadPlugin(newPluginUrl);
+      
+      toast({
+        title: "Plugin Loaded",
+        description: `Successfully loaded plugin from: ${newPluginUrl}`,
+      });
+      
+      setNewPluginUrl('');
+      loadPlugins();
+    } catch (error) {
+      toast({
+        title: "Plugin Load Failed",
+        description: error instanceof Error ? error.message : "Failed to load plugin",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRemovePlugin = (pluginName: string) => {
     // In a real implementation, this would remove the plugin
     console.log(`Removing plugin: ${pluginName}`);
+    
+    toast({
+      title: "Plugin Removal",
+      description: "In a production environment, this would remove the plugin.",
+    });
+    
     loadPlugins();
   };
 
@@ -80,15 +112,25 @@ const PluginManager = () => {
                   size="sm" 
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
                   onClick={handleAddPlugin}
+                  disabled={isLoading}
                 >
-                  <Plus size={14} className="mr-1" />
-                  Add
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Plus size={14} className="mr-1" />
+                      Add
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-zinc-500">
-              Add plugins from URLs or local paths. Plugins can include commands, agents, and skills.
-            </p>
+            <div className="flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-800 rounded-lg">
+              <AlertTriangle size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-[10px] text-amber-500">
+                Only plugins from approved sources can be loaded. External plugins require administrator approval.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
