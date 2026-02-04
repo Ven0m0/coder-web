@@ -1,4 +1,5 @@
 import { LRUCache } from 'lru-cache';
+import { encode as zonEncode, decode as zonDecode } from 'zon-format';
 
 // TOON (Token-Oriented Object Notation) implementation
 export class ToonFormatter {
@@ -49,6 +50,25 @@ export class ToonFormatter {
     });
     
     return entries.join('\n');
+  }
+}
+
+// ZON (Zero Overhead Notation) formatter
+export class ZonFormatter {
+  static encode(obj: any): string {
+    try {
+      return zonEncode(obj);
+    } catch (error) {
+      throw new Error(`ZON encoding failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  static decode(zonStr: string): any {
+    try {
+      return zonDecode(zonStr);
+    } catch (error) {
+      throw new Error(`ZON decoding failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }
 
@@ -190,6 +210,42 @@ export class TokenOptimizer {
       return toon;
     } catch {
       return json;
+    }
+  }
+  
+  // Convert JSON to ZON format
+  jsonToZon(json: string): string {
+    const cacheKey = `zon:${json}`;
+    
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+    
+    try {
+      const obj = JSON.parse(json);
+      const zon = ZonFormatter.encode(obj);
+      this.cache.set(cacheKey, zon);
+      return zon;
+    } catch (error) {
+      throw new Error(`ZON conversion failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  
+  // Convert ZON back to JSON
+  zonToJson(zonStr: string): string {
+    const cacheKey = `zonToJson:${zonStr}`;
+    
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+    
+    try {
+      const obj = ZonFormatter.decode(zonStr);
+      const json = JSON.stringify(obj, null, 2);
+      this.cache.set(cacheKey, json);
+      return json;
+    } catch (error) {
+      throw new Error(`ZON to JSON conversion failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   

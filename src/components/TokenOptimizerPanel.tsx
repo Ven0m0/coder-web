@@ -11,7 +11,8 @@ import {
   Code, 
   Filter, 
   Database,
-  BarChart3
+  BarChart3,
+  Layers
 } from 'lucide-react';
 import { tokenOptimizer, ToonFormatter } from '@/utils/tokenOptimizer';
 
@@ -19,9 +20,11 @@ const TokenOptimizerPanel = () => {
   const [input, setInput] = useState('');
   const [optimized, setOptimized] = useState('');
   const [toonOutput, setToonOutput] = useState('');
+  const [zonOutput, setZonOutput] = useState('');
   const [filteredOutput, setFilteredOutput] = useState('');
   const [filterPatterns, setFilterPatterns] = useState('extra-whitespace');
   const [cacheStats, setCacheStats] = useState({ size: 0, maxSize: 100 });
+  const [zonError, setZonError] = useState('');
 
   const handleOptimize = () => {
     if (!input) return;
@@ -47,6 +50,23 @@ const TokenOptimizerPanel = () => {
       setCacheStats(stats);
     } catch (e) {
       setToonOutput('Invalid JSON input');
+    }
+  };
+
+  const handleZonConvert = () => {
+    if (!input) return;
+    
+    setZonError('');
+    try {
+      const zon = tokenOptimizer.jsonToZon(input);
+      setZonOutput(zon);
+      
+      // Update cache stats
+      const stats = tokenOptimizer.getCacheStats();
+      setCacheStats(stats);
+    } catch (e) {
+      setZonError(e instanceof Error ? e.message : 'Invalid JSON input');
+      setZonOutput('');
     }
   };
 
@@ -91,8 +111,8 @@ const TokenOptimizerPanel = () => {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter content to optimize..."
-              className="bg-zinc-950 border-zinc-800 text-zinc-200 min-h-[200px]"
+              placeholder="Enter JSON content to optimize..."
+              className="bg-zinc-950 border-zinc-800 text-zinc-200 min-h-[200px] font-mono text-xs"
             />
             <div className="flex flex-wrap gap-2 mt-3">
               <Button 
@@ -109,6 +129,14 @@ const TokenOptimizerPanel = () => {
                 onClick={handleToonConvert}
               >
                 Convert to TOON
+              </Button>
+              <Button 
+                size="sm" 
+                variant="secondary"
+                className="text-xs h-8 bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={handleZonConvert}
+              >
+                Convert to ZON
               </Button>
               <Button 
                 size="sm" 
@@ -133,21 +161,37 @@ const TokenOptimizerPanel = () => {
             <div className="space-y-4">
               <div>
                 <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Optimized Text</h4>
-                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[80px] text-sm text-zinc-300 font-mono">
+                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[60px] text-sm text-zinc-300 font-mono">
                   {optimized || <span className="text-zinc-600">No optimized content yet</span>}
                 </div>
               </div>
               
               <div>
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                  <Layers size={12} className="text-purple-400" />
+                  ZON Format (35-70% cheaper)
+                </h4>
+                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[60px] text-sm text-zinc-300 font-mono whitespace-pre-wrap">
+                  {zonError ? (
+                    <span className="text-red-400">{zonError}</span>
+                  ) : zonOutput ? (
+                    zonOutput
+                  ) : (
+                    <span className="text-zinc-600">No ZON conversion yet</span>
+                  )}
+                </div>
+              </div>
+              
+              <div>
                 <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">TOON Format</h4>
-                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[80px] text-sm text-zinc-300 font-mono whitespace-pre-wrap">
+                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[60px] text-sm text-zinc-300 font-mono whitespace-pre-wrap">
                   {toonOutput || <span className="text-zinc-600">No TOON conversion yet</span>}
                 </div>
               </div>
               
               <div>
                 <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Filtered Output</h4>
-                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[80px] text-sm text-zinc-300 font-mono">
+                <div className="bg-zinc-950 border border-zinc-800 rounded p-3 min-h-[60px] text-sm text-zinc-300 font-mono">
                   {filteredOutput || <span className="text-zinc-600">No filtered output yet</span>}
                 </div>
               </div>
@@ -208,8 +252,8 @@ const TokenOptimizerPanel = () => {
       </Card>
 
       <div className="bg-zinc-900/30 border border-zinc-800 rounded-lg p-4">
-        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">TOON Format Example</h4>
-        <div className="text-[11px] text-zinc-400 font-mono space-y-2">
+        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Format Comparison</h4>
+        <div className="text-[11px] text-zinc-400 font-mono space-y-3">
           <div>
             <p className="text-zinc-500 mb-1">Standard JSON:</p>
             <pre className="bg-zinc-950 p-2 rounded">
@@ -221,6 +265,19 @@ const TokenOptimizerPanel = () => {
             </pre>
           </div>
           <div>
+            <p className="text-zinc-500 mb-1 flex items-center gap-2">
+              <Layers size={12} className="text-purple-400" />
+              ZON Format (Best):
+            </p>
+            <pre className="bg-zinc-950 p-2 rounded border-l-2 border-purple-500">
+{`@data(3):id,name,role
+1,Alice,admin
+2,Bob,user
+3,Carol,user`}
+            </pre>
+            <p className="text-[10px] text-purple-400 mt-1">✓ 35-70% fewer tokens than JSON • 4-35% fewer than TOON</p>
+          </div>
+          <div>
             <p className="text-zinc-500 mb-1">TOON Format:</p>
             <pre className="bg-zinc-950 p-2 rounded">
 {`[3]{id,name,role}:
@@ -228,10 +285,8 @@ const TokenOptimizerPanel = () => {
 2,Bob,user
 3,Carol,user`}
             </pre>
+            <p className="text-[10px] text-zinc-500 mt-2">ZON is the most efficient format for LLM workflows.</p>
           </div>
-          <p className="text-[10px] text-zinc-500 mt-2">
-            TOON reduces token usage by ~50% by eliminating repeated field names.
-          </p>
         </div>
       </div>
     </div>
