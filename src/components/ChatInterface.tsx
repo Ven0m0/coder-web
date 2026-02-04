@@ -20,58 +20,22 @@ interface ChatInterfaceProps {
   messages: Message[];
 }
 
-// Simple input sanitization function
-const sanitizeInput = (input: string): string => {
-  // Remove potentially dangerous characters/sequences
-  return input
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/javascript:/gi, '')
-    .replace(/vbscript:/gi, '')
-    .replace(/on\w+=/gi, '')
-    .trim();
-};
-
-// Validate input length
-const validateInput = (input: string): { isValid: boolean; error?: string } => {
-  if (input.length === 0) {
-    return { isValid: false, error: "Message cannot be empty" };
-  }
-  
-  if (input.length > 2000) {
-    return { isValid: false, error: "Message is too long (max 2000 characters)" };
-  }
-  
-  return { isValid: true };
-};
-
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
   const [input, setInput] = useState('');
   const [useOptimization, setUseOptimization] = useState(true);
   const [filterOutput, setFilterOutput] = useState(true);
-  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate input
-    const validation = validateInput(input);
-    if (!validation.isValid) {
-      setError(validation.error || "Invalid input");
-      return;
-    }
-    
-    // Sanitize input
-    const sanitizedInput = sanitizeInput(input);
+    if (!input.trim()) return;
     
     // Optimize input if enabled
     const optimizedInput = useOptimization 
-      ? tokenOptimizer.optimizeContent(sanitizedInput) 
-      : sanitizedInput;
+      ? tokenOptimizer.optimizeContent(input) 
+      : input;
     
     onSendMessage(optimizedInput);
     setInput('');
-    setError('');
   };
 
   // Process message content for display
@@ -166,10 +130,7 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
           <Input 
             value={input} 
-            onChange={(e) => {
-              setInput(e.target.value);
-              if (error) setError('');
-            }} 
+            onChange={(e) => setInput(e.target.value)} 
             placeholder="Ask the agent to build something..." 
             className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0" 
           />
@@ -181,9 +142,6 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
             <Send size={18} />
           </Button>
         </form>
-        {error && (
-          <p className="text-[10px] text-center text-red-400 mt-2">{error}</p>
-        )}
         <p className="text-[10px] text-center text-zinc-600 mt-4 uppercase tracking-widest font-medium">
           Powered by OpenCode CLI • Agent Mode Active
         </p>

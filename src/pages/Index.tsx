@@ -30,7 +30,7 @@ const Index = () => {
     "Tools detected: rg, fd, ast-grep, repomix, gh",
     "MCP: bun runtime detected",
     "MCP: uv runtime detected",
-    "Connected to LLM provider...",
+    "Connected to Jules (Google) API...",
     "Ready for agentic tasks."
   ]);
 
@@ -52,15 +52,15 @@ const Index = () => {
     setMessages(prev => [...prev, agentThinking]);
     
     setTimeout(() => {
-      setLogs(prev => [...prev, `Executing search for: "${content}"`]);
-      setLogs(prev => [...prev, "Found 3 matches in codebase"]);
+      setLogs(prev => [...prev, `Executing command: rg "${content}" .`]);
+      setLogs(prev => [...prev, "Found 3 matches in src/components/"]);
       
       setTimeout(() => {
         setLogs(prev => [...prev, "Task completed successfully."]);
         setMessages(prev => {
           const newMsgs = [...prev];
           const last = newMsgs[newMsgs.length - 1];
-          last.content = "I've analyzed the codebase and am ready to proceed with the implementation.";
+          last.content = "I've used ripgrep to search the codebase and analyzed the results. I'm ready to proceed with the implementation.";
           last.status = 'done';
           return newMsgs;
         });
