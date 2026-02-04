@@ -1,0 +1,109 @@
+"use client";
+
+import React, { useState } from 'react';
+import { Send, Bot, User, Sparkles, Command } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+
+interface Message {
+  role: 'user' | 'agent';
+  content: string;
+  status?: 'thinking' | 'executing' | 'done';
+}
+
+interface ChatInterfaceProps {
+  onSendMessage: (msg: string) => void;
+  messages: Message[];
+}
+
+const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
+  const [input, setInput] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    onSendMessage(input);
+    setInput('');
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-[#1a1a1a] text-zinc-200">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-[#1a1a1a]/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <Bot size={18} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-sm font-semibold">OpenCode Agent</h1>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Ready to code</span>
+            </div>
+          </div>
+        </div>
+        <Badge variant="outline" className="bg-zinc-900 border-zinc-700 text-zinc-400 gap-1">
+          <Command size={12} />
+          <span>Agent Mode</span>
+        </Badge>
+      </div>
+
+      <ScrollArea className="flex-1 px-6 py-8">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'agent' && (
+                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 border border-zinc-700">
+                  <Sparkles size={14} className="text-indigo-400" />
+                </div>
+              )}
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                msg.role === 'user' 
+                  ? 'bg-indigo-600 text-white rounded-tr-none' 
+                  : 'bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none'
+              }`}>
+                {msg.content}
+                {msg.status === 'thinking' && (
+                  <div className="mt-2 flex gap-1">
+                    <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce" />
+                    <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  </div>
+                )}
+              </div>
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                  <User size={14} className="text-zinc-300" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <div className="p-6 border-t border-zinc-800 bg-[#1a1a1a]">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask the agent to build something..."
+            className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0"
+          />
+          <Button 
+            type="submit"
+            size="icon"
+            className="absolute right-2 top-2 h-10 w-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all"
+          >
+            <Send size={18} />
+          </Button>
+        </form>
+        <p className="text-[10px] text-center text-zinc-600 mt-4 uppercase tracking-widest font-medium">
+          Powered by OpenCode CLI • Agent Mode Active
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default ChatInterface;
