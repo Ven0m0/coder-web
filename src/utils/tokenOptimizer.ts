@@ -30,22 +30,28 @@ export class ToonFormatter {
           const rows = obj.map(item => 
             keys.map(k => {
               const val = item[k];
-              return typeof val === 'string' && (val.includes(',') || val.includes('"')) 
-                ? `"${val.replace(/"/g, '""')}"` 
+              // Sanitize values to prevent injection
+              const sanitizedVal = typeof val === 'string' 
+                ? val.replace(/[\n\r,]/g, ' ') 
                 : String(val);
+              return typeof sanitizedVal === 'string' && (sanitizedVal.includes(',') || sanitizedVal.includes('"')) 
+                ? `"${sanitizedVal.replace(/"/g, '""')}"` 
+                : sanitizedVal;
             }).join(',')
           );
           return `[${obj.length}]{${header}}:\n${rows.join('\n')}`;
         }
       }
       
-      // Regular array formatting
+      // Regular array formatting with sanitization
       return `[${obj.map(item => this.format(item, schema)).join(', ')}]`;
     }
     
-    // Object formatting
+    // Object formatting with sanitization
     const entries = Object.entries(obj).map(([key, value]) => {
-      const formattedKey = schema ? (schema[key] || key) : key;
+      // Sanitize key
+      const sanitizedKey = key.replace(/[\n\r:]/g, ' ');
+      const formattedKey = schema ? (schema[sanitizedKey] || sanitizedKey) : sanitizedKey;
       return `${formattedKey}: ${this.format(value, schema)}`;
     });
     
@@ -57,7 +63,9 @@ export class ToonFormatter {
 export class ZonFormatter {
   static encode(obj: any): string {
     try {
-      return zonEncode(obj);
+      // Sanitize object before encoding
+      const sanitizedObj = this.sanitizeObject(obj);
+      return zonEncode(sanitizedObj);
     } catch (error) {
       throw new Error(`ZON encoding failed: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -69,6 +77,25 @@ export class ZonFormatter {
     } catch (error) {
       throw new Error(`ZON decoding failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  // Helper to sanitize objects before encoding
+  private static sanitizeObject(obj: any): any {
+    if (typeof obj !== 'object' || obj === null) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.sanitizeObject(item));
+    }
+
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Sanitize key
+      const sanitizedKey = key.replace(/[\n\r]/g, ' ');
+      sanitized[sanitizedKey] = this.sanitizeObject(value);
+    }
+    return sanitized;
   }
 }
 
@@ -88,12 +115,33 @@ export class JsonOptimizer {
   static optimize(json: string): string {
     try {
       const obj = JSON.parse(json);
+      // Sanitize before minifying
+      const sanitizedObj = this.sanitizeObject(obj);
       // Minify JSON
-      return JSON.stringify(obj, null, 0);
+      return JSON.stringify(sanitizedObj, null, 0);
     } catch {
       // If not valid JSON, return as is
       return json;
     }
+  }
+
+  // Helper to sanitize objects
+  private static sanitizeObject(obj: any): any {
+    if (typeof obj !== 'object' || obj === null) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.sanitizeObject(item));
+    }
+
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Sanitize key
+      const sanitizedKey = key.replace(/[\n\r]/g, ' ');
+      sanitized[sanitizedKey] = this.sanitizeObject(value);
+    }
+    return sanitized;
   }
 }
 
@@ -177,18 +225,21 @@ export class TokenOptimizer {
       return this.cache.get(cacheKey)!;
     }
     
-    let optimized = content;
+    // Sanitize content first
+    const sanitizedContent = this.sanitizeContent(content);
+    
+    let optimized = sanitizedContent;
     
     switch (type) {
       case 'markdown':
-        optimized = MarkdownOptimizer.optimize(content);
+        optimized = MarkdownOptimizer.optimize(sanitizedContent);
         break;
       case 'json':
-        optimized = JsonOptimizer.optimize(content);
+        optimized = JsonOptimizer.optimize(sanitizedContent);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = content.replace(/\s+/g, ' ').trim();
+        optimized = sanitizedContent.replace(/\s+/g, ' ').trim();
     }
     
     this.cache.set(cacheKey, optimized);
@@ -205,11 +256,14 @@ export class TokenOptimizer {
     
     try {
       const obj = JSON.parse(json);
-      const toon = ToonFormatter.format(obj, schema);
+      // Sanitize object before formatting
+      const sanitizedObj = this.sanitizeObject(obj);
+      const toon = ToonFormatter.format(sanitizedObj, schema);
       this.cache.set(cacheKey, toon);
       return toon;
     } catch {
-      return json;
+      // Return sanitized original if parsing fails
+      return this.sanitizeContent(json);
     }
   }
   
@@ -222,7 +276,8 @@ export class TokenOptimizer {
     }
     
     try {
-      const obj = JSON.parse(json);
+      const sanitizedJson = this.sanitizeContent(json);
+      const obj = JSON.parse(sanitizedJson);
       const zon = ZonFormatter.encode(obj);
       this.cache.set(cacheKey, zon);
       return zon;
@@ -241,7 +296,9 @@ export class TokenOptimizer {
     
     try {
       const obj = ZonFormatter.decode(zonStr);
-      const json = JSON.stringify(obj, null, 2);
+      // Sanitize object
+      const sanitizedObj = this.sanitizeObject(obj);
+      const json = JSON.stringify(sanitizedObj, null, 2);
       this.cache.set(cacheKey, json);
       return json;
     } catch (error) {
@@ -257,7 +314,9 @@ export class TokenOptimizer {
       return this.cache.get(cacheKey)!;
     }
     
-    const filtered = OutputFilter.filter(output, filters);
+    // Sanitize before filtering
+    const sanitizedOutput = this.sanitizeContent(output);
+    const filtered = OutputFilter.filter(sanitizedOutput, filters);
     this.cache.set(cacheKey, filtered);
     return filtered;
   }
@@ -273,6 +332,46 @@ export class TokenOptimizer {
   // Clear cache
   clearCache() {
     this.cache.clear();
+  }
+  
+  // Content sanitization helper
+  private sanitizeContent(content: string): string {
+    if (typeof content !== 'string') return String(content);
+    
+    // Basic sanitization to prevent injection
+    return content
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/&/g, '&')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .trim();
+  }
+  
+  // Object sanitization helper
+  private sanitizeObject(obj: any): any {
+    if (typeof obj !== 'object' || obj === null) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.sanitizeObject(item));
+    }
+
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Sanitize key
+      const sanitizedKey = key
+        .replace(/</g, '')
+        .replace(/>/g, '')
+        .replace(/&/g, '')
+        .replace(/"/g, '')
+        .replace(/'/g, '')
+        .replace(/[\n\r]/g, ' ');
+      
+      sanitized[sanitizedKey] = this.sanitizeObject(value);
+    }
+    return sanitized;
   }
 }
 

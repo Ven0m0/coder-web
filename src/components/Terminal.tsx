@@ -7,6 +7,24 @@ interface TerminalProps {
   logs: string[];
 }
 
+// Log sanitization function
+const sanitizeLog = (log: string): string => {
+  // Remove or mask sensitive information
+  return log
+    // Mask API keys (common patterns)
+    .replace(/(sk-(?:[a-zA-Z0-9]{20,}))/g, 'sk-***')
+    // Mask file paths that might reveal system structure
+    .replace(/(\/[^\s]*\/(?:home|users|root)\/[^\s]*)/gi, '/***')
+    // Mask email addresses
+    .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '***@***.***')
+    // Mask IP addresses
+    .replace(/(\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b)/g, '***.***.***.***')
+    // Mask common credential patterns
+    .replace(/(password\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'password=***')
+    .replace(/(token\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'token=***')
+    .replace(/(key\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'key=***');
+};
+
 const Terminal = ({ logs }: TerminalProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +47,9 @@ const Terminal = ({ logs }: TerminalProps) => {
         {logs.map((log, i) => (
           <div key={i} className="whitespace-pre-wrap break-all">
             <span className="text-emerald-500 mr-2">❯</span>
-            {log}
+            <span dangerouslySetInnerHTML={{ 
+              __html: sanitizeLog(log) 
+            }} />
           </div>
         ))}
         {logs.length === 0 && (

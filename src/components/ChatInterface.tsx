@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Send, Bot, User, Sparkles, Command, Zap } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Send, Bot, User, Sparkles, Command, Zap, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,19 +20,44 @@ interface ChatInterfaceProps {
   messages: Message[];
 }
 
+// Input sanitization function
+const sanitizeInput = (input: string): string => {
+  // Remove or escape potentially dangerous characters
+  return input
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/&/g, '&')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .trim();
+};
+
+// Output sanitization function
+const sanitizeOutput = (output: string): string => {
+  // Basic sanitization for display
+  return output
+    .replace(/</g, '<')
+    .replace(/>/g, '>');
+};
+
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
   const [input, setInput] = useState('');
   const [useOptimization, setUseOptimization] = useState(true);
   const [filterOutput, setFilterOutput] = useState(true);
+  const [showInput, setShowInput] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     
+    // Sanitize input before processing
+    const sanitizedInput = sanitizeInput(input);
+    
     // Optimize input if enabled
     const optimizedInput = useOptimization 
-      ? tokenOptimizer.optimizeContent(input) 
-      : input;
+      ? tokenOptimizer.optimizeContent(sanitizedInput) 
+      : sanitizedInput;
     
     onSendMessage(optimizedInput);
     setInput('');
@@ -45,10 +70,32 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
     // For agent messages, apply filtering if enabled
     if (filterOutput && !msg.optimized) {
       const filters = ['extra-whitespace', 'repeated-lines'];
-      return tokenOptimizer.filterOutput(msg.content, filters);
+      const filtered = tokenOptimizer.filterOutput(msg.content, filters);
+      return sanitizeOutput(filtered);
     }
     
-    return msg.content;
+    return sanitizeOutput(msg.content);
+  };
+
+  // Handle paste events to sanitize pasted content
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text/plain');
+    const sanitizedText = sanitizeInput(pastedText);
+    const inputElement = inputRef.current;
+    if (inputElement) {
+      const start = inputElement.selectionStart || 0;
+      const end = inputElement.selectionEnd || 0;
+      const newValue = input.substring(0, start) + sanitizedText + input.substring(end);
+      setInput(newValue);
+      // Set cursor position after pasted content
+      setTimeout(() => {
+        if (inputElement) {
+          inputElement.selectionStart = start + sanitizedText.length;
+          inputElement.selectionEnd = start + sanitizedText.length;
+        }
+      }, 0);
+    }
   };
 
   return (
@@ -103,7 +150,11 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
                   ? 'bg-indigo-600 text-white rounded-tr-none' 
                   : 'bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none'
               }`}>
-                {processMessageContent(msg)}
+                <div 
+                  dangerouslySetInnerHTML={{ 
+                    __html: processMessageContent(msg) 
+                  }} 
+                />
                 {msg.status === 'thinking' && (
                   <div className="mt-2 flex gap-1">
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce" />
@@ -129,18 +180,31 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
       <div className="p-6 border-t border-zinc-800 bg-[#1a1a1a]">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
           <Input 
+            ref={inputRef}
             value={input} 
             onChange={(e) => setInput(e.target.value)} 
+            onPaste={handlePaste}
             placeholder="Ask the agent to build something..." 
             className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0" 
           />
-          <Button 
-            type="submit" 
-            size="icon" 
-            className="absolute right-2 top-2 h-10 w-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all"
-          >
-            <Send size={18} />
-          </Button>
+          <div className="absolute right-2 top-2 flex gap-1">
+            <Button 
+              type="button"
+              size="icon" 
+              variant="ghost"
+              className="h-10 w-10 text-zinc-500 hover:text-zinc-300"
+              onClick={() => setShowInput(!showInput)}
+            >
+              {showInput ? <EyeOff size={18} /> : <Eye size={18} />}
+            </Button>
+            <Button 
+              type="submit" 
+              size="icon" 
+              className="h-10 w-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all"
+            >
+              <Send size={18} />
+            </Button>
+          </div>
         </form>
         <p className="text-[10px] text-center text-zinc-600 mt-4 uppercase tracking-widest font-medium">
           Powered by OpenCode CLI • Agent Mode Active

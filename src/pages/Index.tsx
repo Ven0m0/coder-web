@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import Terminal from '@/components/Terminal';
 import FileExplorer from '@/components/FileExplorer';
@@ -16,6 +16,13 @@ interface Message {
   status?: 'thinking' | 'executing' | 'done';
   optimized?: boolean;
 }
+
+// Sanitize user messages to prevent XSS
+const sanitizeMessage = (content: string): string => {
+  const div = document.createElement('div');
+  div.textContent = content;
+  return div.innerHTML;
+};
 
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -34,11 +41,21 @@ const Index = () => {
     "Ready for agentic tasks."
   ]);
 
+  // Add security headers
+  useEffect(() => {
+    // In a real app, these would be set by the server
+    // For client-side apps, we rely on proper CSP and sanitization
+    console.log('Security: Content Security Policy should be enforced by the server');
+  }, []);
+
   const handleSendMessage = (content: string) => {
+    // Sanitize user input
+    const sanitizedContent = sanitizeMessage(content);
+    
     const userMsg: Message = { 
       role: 'user', 
-      content,
-      optimized: content !== tokenOptimizer.optimizeContent(content)
+      content: sanitizedContent,
+      optimized: sanitizedContent !== tokenOptimizer.optimizeContent(sanitizedContent)
     };
     
     setMessages(prev => [...prev, userMsg]);
@@ -51,16 +68,17 @@ const Index = () => {
     
     setMessages(prev => [...prev, agentThinking]);
     
+    // Simulate agent processing with sanitized logs
     setTimeout(() => {
-      setLogs(prev => [...prev, `Executing command: rg "${content}" .`]);
-      setLogs(prev => [...prev, "Found 3 matches in src/components/"]);
+      setLogs(prev => [...prev, `Executing search for: "${sanitizedContent.substring(0, 30)}..."`]);
+      setLogs(prev => [...prev, "Found relevant files in src/components/"]);
       
       setTimeout(() => {
-        setLogs(prev => [...prev, "Task completed successfully."]);
+        setLogs(prev => [...prev, "Task analysis completed successfully."]);
         setMessages(prev => {
           const newMsgs = [...prev];
           const last = newMsgs[newMsgs.length - 1];
-          last.content = "I've used ripgrep to search the codebase and analyzed the results. I'm ready to proceed with the implementation.";
+          last.content = "I've analyzed the codebase and identified the relevant components. I'm ready to proceed with the implementation.";
           last.status = 'done';
           return newMsgs;
         });
