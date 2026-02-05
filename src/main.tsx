@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
 
-// Set Content Security Policy
+// Set Content Security Policy after DOM is ready
 const setCSP = () => {
   const csp = `
     default-src 'self';
@@ -25,7 +25,22 @@ const setCSP = () => {
   document.head.appendChild(meta);
 };
 
-// Apply CSP before rendering the app
-setCSP();
+// Wait for DOM to be ready before rendering
+document.addEventListener('DOMContentLoaded', () => {
+  // Apply CSP before rendering the app
+  setCSP();
+  
+  // Render the app
+  createRoot(document.getElementById("root")!).render(<App />);
+});
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Fallback for cases where DOM is already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setCSP();
+    createRoot(document.getElementById("root")!).render(<App />);
+  });
+} else {
+  setCSP();
+  createRoot(document.getElementById("root")!).render(<App />);
+}
