@@ -1,40 +1,33 @@
-# Build stage using Bun
-FROM oven/bun:1 AS builder
-
+# Use the official Bun image
+FROM oven/bun:1.1 as base
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lockb* biome.json ./
+# Install dependencies
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-# Install dependencies using Bun (much faster than npm/pnpm)
-RUN bun install --frozen-lockfile
+# Install production dependencies
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
 
-# Copy source code
+# Build the application
+FROM base AS build
+COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-
-# Run Biome checks
-RUN bun run lint
-
-# Build the application using Bun
 RUN bun run build
 
-# Production stage
-FROM nginx:alpine
+# Final production image
+FROM base AS release
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=build /app/dist dist
+COPY --from=build /app/package.json .
 
-# Copy built files from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Create directory for plugins
-RUN mkdir -p /usr/share/nginx/html/plugins
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port
+# Expose the port
 EXPOSE 80
 
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
-
-CMD ["nginx", "-g", "daemon off;"]
+# Run the application
+USER bun
+ENTRYPOINT [ "bun", "run", "dist/main.js" ]

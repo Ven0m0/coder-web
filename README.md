@@ -9,7 +9,7 @@ A powerful agentic coding interface with Claude Code-style plugin support, power
 - **Plugin System**: Claude Code-compatible plugins for commands, agents, and skills
 - **Token Optimization**: ZON and TOON formats for reduced LLM costs
 - **MCP Support**: Model Context Protocol integration for tool usage
-- **Docker Deployment**: Easy self-hosting with Docker
+- **Docker Deployment**: Easy self-hosting with Docker (powered by Bun)
 
 ## Quick Start
 
@@ -24,16 +24,6 @@ bun run dev
 bun run build
 ```
 
-## Plugin System
-
-OpenCode CLI supports a Claude Code-compatible plugin system:
-
-1. **Commands**: Extend CLI functionality with custom commands
-2. **Agents**: Add specialized AI agents for different tasks
-3. **Skills**: Reusable components that can be shared between agents
-
-Plugins can be added through the UI or by placing them in the `plugins` directory.
-
 ## Deployment
 
 ### Docker (Recommended)
@@ -45,7 +35,7 @@ docker-compose up -d --build
 ```bash
 bun install
 bun run build
-bunx serve dist -p 80
+bun run preview
 ```
 
 ## Development
@@ -56,10 +46,6 @@ bunx serve dist -p 80
 - `bun run format` - Format code with Biome
 - `bun run build` - Build for production
 
-## Self-Hosting
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed self-hosting instructions.
-
 ## Technologies
 
 - [Bun](https://bun.sh/) - JavaScript runtime
@@ -67,4 +53,3 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed self-hosting instructions.
 - [React](https://reactjs.org/) - UI library
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [shadcn/ui](https://ui.shadcn.com/) - UI components

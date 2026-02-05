@@ -102,7 +102,7 @@ const MCPManager = () => {
           </Select>
         </div>
         <Input 
-          placeholder="Command (e.g. npx @modelcontextprotocol/server-everything)" 
+          placeholder="Command (e.g. bunx @modelcontextprotocol/server-everything)" 
           value={newCommand}
           onChange={(e) => setNewCommand(e.target.value)}
           className="bg-zinc-950 border-zinc-800 text-xs h-9"
