@@ -173,13 +173,13 @@ importers:
         version: 2.3.15
       '@dyad-sh/react-vite-component-tagger':
         specifier: ^0.8.0
-        version: 0.8.0(vite@6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1))
+        version: 0.8.0(vite@6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1))
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.16(tailwindcss@3.4.17)
       '@types/node':
         specifier: ^22.5.5
-        version: 22.14.1
+        version: 22.19.11
       '@types/react':
         specifier: ^19.2.8
         version: 19.2.8
@@ -188,7 +188,7 @@ importers:
         version: 19.2.3(@types/react@19.2.8)
       '@vitejs/plugin-react-swc':
         specifier: ^3.9.0
-        version: 3.9.0(vite@6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1))
+        version: 3.9.0(vite@6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.21(postcss@8.5.3)
@@ -206,7 +206,7 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^6.3.4
-        version: 6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1)
+        version: 6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1)
 
 packages:
 
@@ -1380,8 +1380,8 @@ packages:
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
 
-  '@types/node@22.14.1':
-    resolution: {integrity: sha512-u0HuPQwe/dHrItgHHpmw3N2fYCR6x4ivMNbPHRkBVP4CvN+kiRrKHWk3i8tXiO/joPwXLMYvF9TTF0eqgHIuOw==}
+  '@types/node@22.19.11':
+    resolution: {integrity: sha512-BH7YwL6rA93ReqeQS1c4bsPpcfOmJasG+Fkr6Y59q83f9M1WcBRHR2vM+P9eOisYRcN3ujQoiZY8uk5W+1WL8w==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -2472,12 +2472,12 @@ snapshots:
 
   '@date-fns/tz@1.4.1': {}
 
-  '@dyad-sh/react-vite-component-tagger@0.8.0(vite@6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1))':
+  '@dyad-sh/react-vite-component-tagger@0.8.0(vite@6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1))':
     dependencies:
       '@babel/parser': 7.27.5
       estree-walker: 2.0.2
       magic-string: 0.30.17
-      vite: 6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1)
+      vite: 6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1)
 
   '@esbuild/aix-ppc64@0.25.3':
     optional: true
@@ -3426,7 +3426,7 @@ snapshots:
 
   '@types/estree@1.0.7': {}
 
-  '@types/node@22.14.1':
+  '@types/node@22.19.11':
     dependencies:
       undici-types: 6.21.0
 
@@ -3446,10 +3446,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react-swc@3.9.0(vite@6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1))':
+  '@vitejs/plugin-react-swc@3.9.0(vite@6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1))':
     dependencies:
       '@swc/core': 1.11.21
-      vite: 6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1)
+      vite: 6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1)
     transitivePeerDependencies:
       - '@swc/helpers'
 
@@ -4323,7 +4323,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite@6.3.4(@types/node@22.14.1)(jiti@1.21.7)(yaml@2.7.1):
+  vite@6.3.4(@types/node@22.19.11)(jiti@1.21.7)(yaml@2.7.1):
     dependencies:
       esbuild: 0.25.3
       fdir: 6.4.4(picomatch@4.0.2)
@@ -4332,7 +4332,7 @@ snapshots:
       rollup: 4.40.0
       tinyglobby: 0.2.13
     optionalDependencies:
-      '@types/node': 22.14.1
+      '@types/node': 22.19.11
       fsevents: 2.3.3
       jiti: 1.21.7
       yaml: 2.7.1
