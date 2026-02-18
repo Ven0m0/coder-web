@@ -1,5 +1,7 @@
 # OpenCode CLI
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/969987b6-2e7d-4e41-9035-56e4a148da3e/deploy-status)](https://app.netlify.com/projects/coder-llmweb/deploys)
+
 A powerful agentic coding interface with Claude Code-style plugin support, powered by Bun and Biome.
 
 ## Features
