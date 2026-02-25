@@ -93,7 +93,7 @@ const MCPManager = () => {
             onChange={(e) => setNewName(e.target.value)}
             className="bg-zinc-950 border-zinc-800 text-xs h-9"
           />
-          <Select value={newRuntime} onValueChange={(v: MCPRuntime) => setNewRuntime(v)}>
+          <Select value={newRuntime} onValueChange={(v) => setNewRuntime(v as MCPRuntime)}>
             <SelectTrigger className="bg-zinc-950 border-zinc-800 text-xs h-9">
               <SelectValue placeholder="Runtime" />
             </SelectTrigger>
