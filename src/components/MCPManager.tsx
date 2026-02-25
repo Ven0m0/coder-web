@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+export type MCPRuntime = 'bun' | 'uv';
+
 export interface MCPServer {
   id: string;
   name: string;
-  runtime: 'bun' | 'uv';
+  runtime: MCPRuntime;
   command: string;
   status: 'running' | 'stopped' | 'error';
 }
@@ -22,7 +24,7 @@ const MCPManager = () => {
   ]);
 
   const [newName, setNewName] = useState('');
-  const [newRuntime, setNewRuntime] = useState<'bun' | 'uv'>('bun');
+  const [newRuntime, setNewRuntime] = useState<MCPRuntime>('bun');
   const [newCommand, setNewCommand] = useState('');
 
   const addServer = () => {
@@ -91,7 +93,7 @@ const MCPManager = () => {
             onChange={(e) => setNewName(e.target.value)}
             className="bg-zinc-950 border-zinc-800 text-xs h-9"
           />
-          <Select value={newRuntime} onValueChange={(v: any) => setNewRuntime(v)}>
+          <Select value={newRuntime} onValueChange={(v: MCPRuntime) => setNewRuntime(v)}>
             <SelectTrigger className="bg-zinc-950 border-zinc-800 text-xs h-9">
               <SelectValue placeholder="Runtime" />
             </SelectTrigger>
