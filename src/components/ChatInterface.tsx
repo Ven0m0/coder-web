@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { Send, Bot, User, Sparkles, Command, Zap, Eye, EyeOff } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Command, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -45,7 +45,6 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
   const [input, setInput] = useState('');
   const [useOptimization, setUseOptimization] = useState(true);
   const [filterOutput, setFilterOutput] = useState(true);
-  const [showInput, setShowInput] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -189,15 +188,6 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
             className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0" 
           />
           <div className="absolute right-2 top-2 flex gap-1">
-            <Button 
-              type="button"
-              size="icon" 
-              variant="ghost"
-              className="h-10 w-10 text-zinc-500 hover:text-zinc-300"
-              onClick={() => setShowInput(!showInput)}
-            >
-              {showInput ? <EyeOff size={18} /> : <Eye size={18} />}
-            </Button>
             <Button 
               type="submit" 
               size="icon" 
