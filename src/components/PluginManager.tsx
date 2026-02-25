@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getAllPlugins, getCommands, getAgents, getSkills, loadPluginSecure } from '@/plugins/index';
+import { getAllPlugins, getCommands, getAgents, getSkills, loadPluginSecure, unloadPlugin } from '@/plugins/index';
 import { toast } from 'sonner';
 
 const PluginManager = () => {
@@ -34,8 +34,8 @@ const PluginManager = () => {
     
     setLoading(true);
     try {
-      // Use the secure plugin loading mechanism
-      await loadPluginSecure(newPluginUrl);
+      // Use the secure plugin loading mechanism with persistence
+      await loadPluginSecure(newPluginUrl, true);
       toast.success(`Plugin added successfully from: ${newPluginUrl}`);
       setNewPluginUrl('');
       // Refresh the plugin list
@@ -49,10 +49,13 @@ const PluginManager = () => {
   };
 
   const handleRemovePlugin = (pluginName: string) => {
-    // In a real implementation, this would remove the plugin
-    console.log(`Removing plugin: ${pluginName}`);
-    loadPlugins();
-    toast.info(`Plugin ${pluginName} removed`);
+    const success = unloadPlugin(pluginName);
+    if (success) {
+      toast.success(`Plugin ${pluginName} removed`);
+      loadPlugins();
+    } else {
+      toast.error(`Failed to remove plugin: ${pluginName}`);
+    }
   };
 
   return (

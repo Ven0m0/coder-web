@@ -6,12 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
-import { loadPlugin } from "@/plugins/index";
+import { loadPlugin, initializePlugins } from "@/plugins/index";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
+    // Initialize persisted plugins
+    initializePlugins();
+
     // Load example plugin on app start
     loadPlugin("./plugins/example-plugin");
   }, []);
