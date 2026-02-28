@@ -1,26 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Upload, Package, Play, Trash2, Plus, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { getAllPlugins, getCommands, getAgents, getSkills, loadPluginSecure, unloadPlugin } from '@/plugins/index';
-import { toast } from 'sonner';
+import { AlertTriangle, CheckCircle, Package, Play, Plus, Trash2, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  getAgents,
+  getAllPlugins,
+  getCommands,
+  getSkills,
+  loadPluginSecure,
+  unloadPlugin,
+} from "@/plugins/index";
 
 const PluginManager = () => {
   const [plugins, setPlugins] = useState<any[]>([]);
   const [commands, setCommands] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [skills, setSkills] = useState<any[]>([]);
-  const [newPluginUrl, setNewPluginUrl] = useState('');
+  const [newPluginUrl, setNewPluginUrl] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    loadPlugins();
-  }, []);
 
   const loadPlugins = () => {
     setPlugins(getAllPlugins());
@@ -29,20 +32,27 @@ const PluginManager = () => {
     setSkills(getSkills());
   };
 
+  useEffect(() => {
+    loadPlugins();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: loadPlugins is stable but not a hook dependency
+  }, []);
+
   const handleAddPlugin = async () => {
     if (!newPluginUrl) return;
-    
+
     setLoading(true);
     try {
       // Use the secure plugin loading mechanism with persistence
       await loadPluginSecure(newPluginUrl, true);
       toast.success(`Plugin added successfully from: ${newPluginUrl}`);
-      setNewPluginUrl('');
+      setNewPluginUrl("");
       // Refresh the plugin list
       loadPlugins();
     } catch (error) {
-      console.error('Failed to add plugin:', error);
-      toast.error(`Failed to add plugin: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Failed to add plugin:", error);
+      toast.error(
+        `Failed to add plugin: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -65,7 +75,10 @@ const PluginManager = () => {
           <Package className="text-indigo-400" size={20} />
           <h3 className="text-sm font-semibold text-zinc-200">Plugin Manager</h3>
         </div>
-        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-zinc-800 text-zinc-500">
+        <Badge
+          variant="outline"
+          className="text-[10px] uppercase tracking-wider border-zinc-800 text-zinc-500"
+        >
           Claude Code Compatible
         </Badge>
       </div>
@@ -80,7 +93,10 @@ const PluginManager = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="plugin-url" className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+              <Label
+                htmlFor="plugin-url"
+                className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest"
+              >
                 Plugin URL or Path
               </Label>
               <div className="flex gap-2">
@@ -92,8 +108,8 @@ const PluginManager = () => {
                   className="bg-zinc-950 border-zinc-800 text-zinc-200 text-xs flex-1"
                   disabled={loading}
                 />
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
                   onClick={handleAddPlugin}
                   disabled={loading || !newPluginUrl}
@@ -111,7 +127,10 @@ const PluginManager = () => {
             </div>
             <div className="flex items-center gap-2 text-[10px] text-amber-500 bg-amber-500/10 p-2 rounded">
               <AlertTriangle size={12} />
-              <span>Only plugins from trusted sources will be loaded. All plugins are sandboxed for security.</span>
+              <span>
+                Only plugins from trusted sources will be loaded. All plugins are sandboxed for
+                security.
+              </span>
             </div>
           </div>
         </CardContent>
@@ -129,20 +148,26 @@ const PluginManager = () => {
             <div className="space-y-3">
               {plugins.length > 0 ? (
                 plugins.map((plugin) => (
-                  <div key={plugin.name} className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                  <div
+                    key={plugin.name}
+                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/50 border border-zinc-800"
+                  >
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-zinc-300">{plugin.name}</span>
-                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-zinc-800 text-zinc-400 border-none">
+                        <Badge
+                          variant="secondary"
+                          className="text-[9px] h-4 px-1.5 bg-zinc-800 text-zinc-400 border-none"
+                        >
                           v{plugin.version}
                         </Badge>
                         <CheckCircle size={12} className="text-emerald-500" />
                       </div>
                       <p className="text-[10px] text-zinc-500 mt-1">{plugin.description}</p>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8 text-zinc-500 hover:text-red-400"
                       onClick={() => handleRemovePlugin(plugin.name)}
                     >
@@ -171,8 +196,13 @@ const PluginManager = () => {
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {commands.length > 0 ? (
                   commands.map((command) => (
-                    <div key={command.name} className="flex items-center gap-2 p-2 rounded bg-zinc-900/50 border border-zinc-800">
-                      <code className="text-[10px] text-zinc-300 font-mono flex-1">/{command.name}</code>
+                    <div
+                      key={command.name}
+                      className="flex items-center gap-2 p-2 rounded bg-zinc-900/50 border border-zinc-800"
+                    >
+                      <code className="text-[10px] text-zinc-300 font-mono flex-1">
+                        /{command.name}
+                      </code>
                       <span className="text-[9px] text-zinc-500">{command.description}</span>
                     </div>
                   ))
@@ -196,15 +226,16 @@ const PluginManager = () => {
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {agents.length > 0 ? (
                   agents.map((agent) => (
-                    <div key={agent.name} className="p-2 rounded bg-zinc-900/50 border border-zinc-800">
+                    <div
+                      key={agent.name}
+                      className="p-2 rounded bg-zinc-900/50 border border-zinc-800"
+                    >
                       <div className="text-xs font-medium text-zinc-300">{agent.name}</div>
                       <p className="text-[10px] text-zinc-500 mt-1">{agent.description}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-[10px] text-zinc-500 text-center py-2">
-                    No agents available
-                  </p>
+                  <p className="text-[10px] text-zinc-500 text-center py-2">No agents available</p>
                 )}
               </div>
             </CardContent>
@@ -223,7 +254,10 @@ const PluginManager = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {skills.length > 0 ? (
               skills.map((skill) => (
-                <div key={skill.name} className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                <div
+                  key={skill.name}
+                  className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800"
+                >
                   <div className="text-xs font-medium text-zinc-300">{skill.name}</div>
                   <p className="text-[10px] text-zinc-500 mt-1">{skill.description}</p>
                 </div>

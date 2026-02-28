@@ -1,14 +1,13 @@
 "use client";
 
-import React from 'react';
-import { Settings, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import MCPManager from './MCPManager';
-import ProviderManager from './ProviderManager';
-import SystemTools from './SystemTools';
-import TokenOptimizerPanel from './TokenOptimizerPanel';
-import PluginManager from './PluginManager';
+import { Settings, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import MCPManager from "./MCPManager";
+import PluginManager from "./PluginManager";
+import ProviderManager from "./ProviderManager";
+import SystemTools from "./SystemTools";
+import TokenOptimizerPanel from "./TokenOptimizerPanel";
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -28,7 +27,12 @@ const SettingsPanel = ({ isOpen, onClose }: SettingsPanelProps) => {
             </div>
             <h2 className="text-lg font-semibold text-zinc-100">OpenCode Configuration</h2>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="text-zinc-500 hover:text-zinc-300"
+          >
             <X size={20} />
           </Button>
         </div>

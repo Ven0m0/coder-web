@@ -1,6 +1,6 @@
-import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { Dot } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -60,6 +60,9 @@ const InputOTPSeparator = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
 >(({ ...props }, ref) => (
+  // biome-ignore lint/a11y/useFocusableInteractive: separator is decorative in this context
+  // biome-ignore lint/a11y/useSemanticElements: using div for separator
+  // biome-ignore lint/a11y/useAriaPropsForRole: decorative separator doesn't need values
   <div ref={ref} role="separator" {...props}>
     <Dot />
   </div>
