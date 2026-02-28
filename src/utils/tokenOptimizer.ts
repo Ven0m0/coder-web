@@ -225,21 +225,18 @@ export class TokenOptimizer {
       return this.cache.get(cacheKey)!;
     }
     
-    // Sanitize content first
-    const sanitizedContent = this.sanitizeContent(content);
-    
-    let optimized = sanitizedContent;
+    let optimized = content;
     
     switch (type) {
       case 'markdown':
-        optimized = MarkdownOptimizer.optimize(sanitizedContent);
+        optimized = MarkdownOptimizer.optimize(content);
         break;
       case 'json':
-        optimized = JsonOptimizer.optimize(sanitizedContent);
+        optimized = JsonOptimizer.optimize(content);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = sanitizedContent.replace(/\s+/g, ' ').trim();
+        optimized = content.replace(/\s+/g, ' ').trim();
     }
     
     this.cache.set(cacheKey, optimized);
@@ -276,8 +273,7 @@ export class TokenOptimizer {
     }
     
     try {
-      const sanitizedJson = this.sanitizeContent(json);
-      const obj = JSON.parse(sanitizedJson);
+      const obj = JSON.parse(json);
       const zon = ZonFormatter.encode(obj);
       this.cache.set(cacheKey, zon);
       return zon;
@@ -314,9 +310,7 @@ export class TokenOptimizer {
       return this.cache.get(cacheKey)!;
     }
     
-    // Sanitize before filtering
-    const sanitizedOutput = this.sanitizeContent(output);
-    const filtered = OutputFilter.filter(sanitizedOutput, filters);
+    const filtered = OutputFilter.filter(output, filters);
     this.cache.set(cacheKey, filtered);
     return filtered;
   }
