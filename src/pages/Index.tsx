@@ -18,13 +18,6 @@ interface Message {
   optimized?: boolean;
 }
 
-// Sanitize user messages to prevent XSS
-const sanitizeMessage = (content: string): string => {
-  const div = document.createElement('div');
-  div.textContent = content;
-  return div.innerHTML;
-};
-
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -69,13 +62,10 @@ const Index = () => {
   }, []);
 
   const handleSendMessage = async (content: string) => {
-    // Sanitize user input
-    const sanitizedContent = sanitizeMessage(content);
-    
     const userMsg: Message = { 
       role: 'user', 
-      content: sanitizedContent,
-      optimized: sanitizedContent !== tokenOptimizer.optimizeContent(sanitizedContent)
+      content: content,
+      optimized: content !== tokenOptimizer.optimizeContent(content)
     };
     
     setMessages(prev => [...prev, userMsg]);
@@ -95,7 +85,7 @@ const Index = () => {
     
     // Simulate agent processing with sanitized logs
     setTimeout(() => {
-      setLogs(prev => [...prev, `Executing search for: "${sanitizedContent.substring(0, 30)}..."`]);
+      setLogs(prev => [...prev, `Executing search for: "${content.substring(0, 30)}..."`]);
       setLogs(prev => [...prev, "Found relevant files in src/components/"]);
       
       setTimeout(() => {

@@ -23,22 +23,14 @@ interface ChatInterfaceProps {
 
 // Input sanitization function
 const sanitizeInput = (input: string): string => {
-  // Remove or escape potentially dangerous characters
-  return input
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/&/g, '&')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .trim();
+  // Trim input and perform basic cleanup
+  return input.trim();
 };
 
 // Output sanitization function
 const sanitizeOutput = (output: string): string => {
-  // Basic sanitization for display
-  return output
-    .replace(/</g, '<')
-    .replace(/>/g, '>');
+  // No manual escaping needed as React handles it
+  return output;
 };
 
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
@@ -151,11 +143,9 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
                   ? 'bg-indigo-600 text-white rounded-tr-none' 
                   : 'bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none'
               }`}>
-                <div 
-                  dangerouslySetInnerHTML={{ 
-                    __html: processMessageContent(msg) 
-                  }} 
-                />
+                <div className="whitespace-pre-wrap">
+                  {processMessageContent(msg)}
+                </div>
                 {msg.status === 'thinking' && (
                   <div className="mt-2 flex gap-1">
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce" />

@@ -47,9 +47,7 @@ const Terminal = ({ logs }: TerminalProps) => {
         {logs.map((log, i) => (
           <div key={i} className="whitespace-pre-wrap break-all">
             <span className="text-emerald-500 mr-2">❯</span>
-            <span dangerouslySetInnerHTML={{ 
-              __html: sanitizeLog(log) 
-            }} />
+            <span>{sanitizeLog(log)}</span>
           </div>
         ))}
         {logs.length === 0 && (
