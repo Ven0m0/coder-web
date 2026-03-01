@@ -108,7 +108,11 @@ const ProviderManager = () => {
           errorMessage = data.error?.message || response.statusText;
         }
       } else if (selectedProvider === 'google' || selectedProvider === 'jules') {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${currentApiKey}`);
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+          headers: {
+            'x-goog-api-key': currentApiKey
+          }
+        });
 
         if (response.ok) {
           success = true;
