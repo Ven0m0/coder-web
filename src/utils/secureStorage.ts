@@ -33,68 +33,60 @@ export class SecureStorage {
 
     return this.cachedKeyPromise;
   }
-  
+
   // Encrypt data
   static async encrypt(data: string): Promise<string> {
-    const key = await this.getEncryptionKey();
+    const key = await SecureStorage.getEncryptionKey();
     const encoder = new TextEncoder();
     const dataBuffer = encoder.encode(data);
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    
-    const encrypted = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv },
-      key,
-      dataBuffer
-    );
-    
+
+    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, dataBuffer);
+
     const encryptedArray = new Uint8Array(encrypted);
     const result = new Uint8Array(iv.length + encryptedArray.length);
     result.set(iv, 0);
     result.set(encryptedArray, iv.length);
-    
+
     return btoa(String.fromCharCode(...result));
   }
-  
+
   // Decrypt data
   static async decrypt(encryptedData: string): Promise<string> {
     try {
-      const key = await this.getEncryptionKey();
+      const key = await SecureStorage.getEncryptionKey();
       const decoder = new TextDecoder();
-      const encryptedBuffer = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+      const encryptedBuffer = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
       const iv = encryptedBuffer.slice(0, 12);
       const data = encryptedBuffer.slice(12);
-      
-      const decrypted = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv },
-        key,
-        data
-      );
-      
+
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+
       return decoder.decode(decrypted);
     } catch (error) {
-      console.error('Decryption failed:', error);
-      return '';
+      console.error("Decryption failed:", error);
+      return "";
     }
   }
-  
+
   // Store encrypted data in localStorage
   static async setItem(key: string, value: string): Promise<void> {
-    const encrypted = await this.encrypt(value);
+    const encrypted = await SecureStorage.encrypt(value);
     localStorage.setItem(key, encrypted);
   }
-  
+
   // Retrieve and decrypt data from localStorage
   static async getItem(key: string): Promise<string | null> {
     const encrypted = localStorage.getItem(key);
     if (!encrypted) return null;
-    return await this.decrypt(encrypted);
+    return await SecureStorage.decrypt(encrypted);
   }
-  
+
   // Remove item from localStorage
   static removeItem(key: string): void {
     localStorage.removeItem(key);
   }
-  
+
   // Clear all items
   static clear(): void {
     localStorage.clear();
@@ -103,7 +95,7 @@ export class SecureStorage {
 
 // Initialize encryption key on module load
 (() => {
-  if (typeof window !== 'undefined' && window.crypto) {
-    SecureStorage['getEncryptionKey']();
+  if (typeof window !== "undefined" && window.crypto) {
+    SecureStorage.getEncryptionKey();
   }
 })();
