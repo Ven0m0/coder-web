@@ -1,99 +1,111 @@
-import { LRUCache } from 'lru-cache';
-import { encode as zonEncode, decode as zonDecode } from 'zon-format';
+import { LRUCache } from "lru-cache";
+import { decode as zonDecode, encode as zonEncode } from "zon-format";
 
 // TOON (Token-Oriented Object Notation) implementation
 export class ToonFormatter {
+  // biome-ignore lint/suspicious/noExplicitAny: generic object handling
   static format(obj: any, schema?: Record<string, string>): string {
-    if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj !== "object" || obj === null) {
       return String(obj);
     }
 
     if (Array.isArray(obj)) {
-      if (obj.length === 0) return '[]';
-      
+      if (obj.length === 0) return "[]";
+
       // Check if array contains objects with same structure
-      if (typeof obj[0] === 'object' && obj[0] !== null && !Array.isArray(obj[0])) {
+      if (typeof obj[0] === "object" && obj[0] !== null && !Array.isArray(obj[0])) {
         const keys = Object.keys(obj[0]);
-        const allSameStructure = obj.every(item => 
-          typeof item === 'object' && 
-          item !== null && 
-          !Array.isArray(item) && 
-          keys.every(k => k in item) &&
-          Object.keys(item).length === keys.length
+        const allSameStructure = obj.every(
+          (item) =>
+            typeof item === "object" &&
+            item !== null &&
+            !Array.isArray(item) &&
+            keys.every((k) => k in item) &&
+            Object.keys(item).length === keys.length,
         );
-        
+
         if (allSameStructure) {
           // Use TOON format for arrays of objects
-          const header = schema ? 
-            `${keys.map(k => schema[k] || k).join(',')}` : 
-            `${keys.join(',')}`;
-          const rows = obj.map(item => 
-            keys.map(k => {
-              const val = item[k];
-              // Sanitize values to prevent injection
-              const sanitizedVal = typeof val === 'string' 
-                ? val.replace(/[\n\r,]/g, ' ') 
-                : String(val);
-              return typeof sanitizedVal === 'string' && (sanitizedVal.includes(',') || sanitizedVal.includes('"')) 
-                ? `"${sanitizedVal.replace(/"/g, '""')}"` 
-                : sanitizedVal;
-            }).join(',')
+          const header = schema
+            ? `${keys.map((k) => schema[k] || k).join(",")}`
+            : `${keys.join(",")}`;
+          const rows = obj.map((item) =>
+            keys
+              .map((k) => {
+                const val = item[k];
+                // Sanitize values to prevent injection
+                const sanitizedVal =
+                  typeof val === "string" ? val.replace(/[\n\r,]/g, " ") : String(val);
+                return typeof sanitizedVal === "string" &&
+                  (sanitizedVal.includes(",") || sanitizedVal.includes('"'))
+                  ? `"${sanitizedVal.replace(/"/g, '""')}"`
+                  : sanitizedVal;
+              })
+              .join(","),
           );
-          return `[${obj.length}]{${header}}:\n${rows.join('\n')}`;
+          return `[${obj.length}]{${header}}:\n${rows.join("\n")}`;
         }
       }
-      
+
       // Regular array formatting with sanitization
-      return `[${obj.map(item => this.format(item, schema)).join(', ')}]`;
+      return `[${obj.map((item) => ToonFormatter.format(item, schema)).join(", ")}]`;
     }
-    
+
     // Object formatting with sanitization
     const entries = Object.entries(obj).map(([key, value]) => {
       // Sanitize key
-      const sanitizedKey = key.replace(/[\n\r:]/g, ' ');
-      const formattedKey = schema ? (schema[sanitizedKey] || sanitizedKey) : sanitizedKey;
-      return `${formattedKey}: ${this.format(value, schema)}`;
+      const sanitizedKey = key.replace(/[\n\r:]/g, " ");
+      const formattedKey = schema ? schema[sanitizedKey] || sanitizedKey : sanitizedKey;
+      return `${formattedKey}: ${ToonFormatter.format(value, schema)}`;
     });
-    
-    return entries.join('\n');
+
+    return entries.join("\n");
   }
 }
 
 // ZON (Zero Overhead Notation) formatter
 export class ZonFormatter {
+  // biome-ignore lint/suspicious/noExplicitAny: generic object handling
   static encode(obj: any): string {
     try {
       // Sanitize object before encoding
-      const sanitizedObj = this.sanitizeObject(obj);
+      const sanitizedObj = ZonFormatter.sanitizeObject(obj);
       return zonEncode(sanitizedObj);
     } catch (error) {
-      throw new Error(`ZON encoding failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `ZON encoding failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: returns decoded object
   static decode(zonStr: string): any {
     try {
       return zonDecode(zonStr);
     } catch (error) {
-      throw new Error(`ZON decoding failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `ZON decoding failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   // Helper to sanitize objects before encoding
+  // biome-ignore lint/suspicious/noExplicitAny: recursive sanitization
   private static sanitizeObject(obj: any): any {
-    if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj !== "object" || obj === null) {
       return obj;
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => ZonFormatter.sanitizeObject(item));
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       // Sanitize key
-      const sanitizedKey = key.replace(/[\n\r]/g, ' ');
-      sanitized[sanitizedKey] = this.sanitizeObject(value);
+      const sanitizedKey = key.replace(/[\n\r]/g, " ");
+      sanitized[sanitizedKey] = ZonFormatter.sanitizeObject(value);
     }
     return sanitized;
   }
@@ -104,8 +116,8 @@ export class MarkdownOptimizer {
   static optimize(markdown: string): string {
     // Remove extra whitespace and newlines
     return markdown
-      .replace(/\n\s*\n\s*\n/g, '\n\n') // Reduce multiple blank lines to single blank line
-      .replace(/^\s+/gm, '') // Remove leading whitespace from each line
+      .replace(/\n\s*\n\s*\n/g, "\n\n") // Reduce multiple blank lines to single blank line
+      .replace(/^\s+/gm, "") // Remove leading whitespace from each line
       .trim();
   }
 }
@@ -116,7 +128,7 @@ export class JsonOptimizer {
     try {
       const obj = JSON.parse(json);
       // Sanitize before minifying
-      const sanitizedObj = this.sanitizeObject(obj);
+      const sanitizedObj = JsonOptimizer.sanitizeObject(obj);
       // Minify JSON
       return JSON.stringify(sanitizedObj, null, 0);
     } catch {
@@ -126,20 +138,22 @@ export class JsonOptimizer {
   }
 
   // Helper to sanitize objects
+  // biome-ignore lint/suspicious/noExplicitAny: recursive sanitization
   private static sanitizeObject(obj: any): any {
-    if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj !== "object" || obj === null) {
       return obj;
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => JsonOptimizer.sanitizeObject(item));
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       // Sanitize key
-      const sanitizedKey = key.replace(/[\n\r]/g, ' ');
-      sanitized[sanitizedKey] = this.sanitizeObject(value);
+      const sanitizedKey = key.replace(/[\n\r]/g, " ");
+      sanitized[sanitizedKey] = JsonOptimizer.sanitizeObject(value);
     }
     return sanitized;
   }
@@ -153,24 +167,25 @@ export class OutputFilter {
     for (const filter of filters) {
       // Handle special filter patterns
       switch (filter) {
-        case 'markdown-code-blocks':
+        case "markdown-code-blocks":
           // Remove markdown code blocks but keep content
           filtered = filtered.replace(/```[\s\S]*?```/g, (match) => {
-            return match.replace(/```.*\n([\s\S]*?)```/, '$1');
+            return match.replace(/```.*\n([\s\S]*?)```/, "$1");
           });
           break;
-        case 'extra-whitespace':
+        case "extra-whitespace":
           // Remove extra whitespace
-          filtered = filtered.replace(/\s+/g, ' ');
+          filtered = filtered.replace(/\s+/g, " ");
           break;
-        case 'repeated-lines':
+        case "repeated-lines":
           // Remove repeated consecutive lines
-          filtered = filtered.replace(/^(.*?)\n(\1\n)+/gm, '$1\n');
+          filtered = filtered.replace(/^(.*?)\n(\1\n)+/gm, "$1\n");
           break;
-        default:
+        default: {
           // Remove custom patterns
-          const regex = new RegExp(filter, 'g');
-          filtered = filtered.replace(regex, '');
+          const regex = new RegExp(filter, "g");
+          filtered = filtered.replace(regex, "");
+        }
       }
     }
     return filtered.trim();
@@ -180,30 +195,34 @@ export class OutputFilter {
 // Caching mechanism
 export class TokenCache {
   private cache: LRUCache<string, string>;
-  
-  constructor(maxSize: number = 100) {
+
+  get internalCache(): LRUCache<string, string> {
+    return this.cache;
+  }
+
+  constructor(maxSize = 100) {
     this.cache = new LRUCache({
       max: maxSize,
-      ttl: 1000 * 60 * 60 // 1 hour TTL
+      ttl: 1000 * 60 * 60, // 1 hour TTL
     });
   }
-  
+
   get(key: string): string | undefined {
     return this.cache.get(key);
   }
-  
+
   set(key: string, value: string): void {
     this.cache.set(key, value);
   }
-  
+
   has(key: string): boolean {
     return this.cache.has(key);
   }
-  
+
   clear(): void {
     this.cache.clear();
   }
-  
+
   size(): number {
     return this.cache.size;
   }
@@ -212,48 +231,50 @@ export class TokenCache {
 // Main token optimization utility
 export class TokenOptimizer {
   private cache: TokenCache;
-  
-  constructor(cacheSize: number = 100) {
+
+  constructor(cacheSize = 100) {
     this.cache = new TokenCache(cacheSize);
   }
-  
+
   // Optimize content for token efficiency
-  optimizeContent(content: string, type: 'markdown' | 'json' | 'text' = 'text'): string {
+  optimizeContent(content: string, type: "markdown" | "json" | "text" = "text"): string {
     const cacheKey = `optimize:${type}:${content}`;
-    
+
     if (this.cache.has(cacheKey)) {
+      // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     // Sanitize content first
     const sanitizedContent = this.sanitizeContent(content);
-    
+
     let optimized = sanitizedContent;
-    
+
     switch (type) {
-      case 'markdown':
+      case "markdown":
         optimized = MarkdownOptimizer.optimize(sanitizedContent);
         break;
-      case 'json':
+      case "json":
         optimized = JsonOptimizer.optimize(sanitizedContent);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = sanitizedContent.replace(/\s+/g, ' ').trim();
+        optimized = sanitizedContent.replace(/\s+/g, " ").trim();
     }
-    
+
     this.cache.set(cacheKey, optimized);
     return optimized;
   }
-  
+
   // Convert JSON to TOON format
   jsonToToon(json: string, schema?: Record<string, string>): string {
     const cacheKey = `toon:${JSON.stringify(schema)}:${json}`;
-    
+
     if (this.cache.has(cacheKey)) {
+      // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     try {
       const obj = JSON.parse(json);
       // Sanitize object before formatting
@@ -266,15 +287,16 @@ export class TokenOptimizer {
       return this.sanitizeContent(json);
     }
   }
-  
+
   // Convert JSON to ZON format
   jsonToZon(json: string): string {
     const cacheKey = `zon:${json}`;
-    
+
     if (this.cache.has(cacheKey)) {
+      // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     try {
       const sanitizedJson = this.sanitizeContent(json);
       const obj = JSON.parse(sanitizedJson);
@@ -282,18 +304,21 @@ export class TokenOptimizer {
       this.cache.set(cacheKey, zon);
       return zon;
     } catch (error) {
-      throw new Error(`ZON conversion failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `ZON conversion failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
-  
+
   // Convert ZON back to JSON
   zonToJson(zonStr: string): string {
     const cacheKey = `zonToJson:${zonStr}`;
-    
+
     if (this.cache.has(cacheKey)) {
+      // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     try {
       const obj = ZonFormatter.decode(zonStr);
       // Sanitize object
@@ -302,73 +327,78 @@ export class TokenOptimizer {
       this.cache.set(cacheKey, json);
       return json;
     } catch (error) {
-      throw new Error(`ZON to JSON conversion failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `ZON to JSON conversion failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
-  
+
   // Filter LLM output
   filterOutput(output: string, filters: string[] = []): string {
-    const cacheKey = `filter:${filters.join(',')}:${output}`;
-    
+    const cacheKey = `filter:${filters.join(",")}:${output}`;
+
     if (this.cache.has(cacheKey)) {
+      // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     // Sanitize before filtering
     const sanitizedOutput = this.sanitizeContent(output);
     const filtered = OutputFilter.filter(sanitizedOutput, filters);
     this.cache.set(cacheKey, filtered);
     return filtered;
   }
-  
+
   // Get cache stats
   getCacheStats() {
     return {
       size: this.cache.size(),
-      maxSize: this.cache['cache'].max
+      maxSize: this.cache.internalCache.max,
     };
   }
-  
+
   // Clear cache
   clearCache() {
     this.cache.clear();
   }
-  
+
   // Content sanitization helper
   private sanitizeContent(content: string): string {
-    if (typeof content !== 'string') return String(content);
-    
+    if (typeof content !== "string") return String(content);
+
     // Basic sanitization to prevent injection
     return content
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/&/g, '&')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;")
       .trim();
   }
-  
+
   // Object sanitization helper
+  // biome-ignore lint/suspicious/noExplicitAny: recursive sanitization
   private sanitizeObject(obj: any): any {
-    if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj !== "object" || obj === null) {
       return obj;
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => this.sanitizeObject(item));
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       // Sanitize key
       const sanitizedKey = key
-        .replace(/</g, '')
-        .replace(/>/g, '')
-        .replace(/&/g, '')
-        .replace(/"/g, '')
-        .replace(/'/g, '')
-        .replace(/[\n\r]/g, ' ');
-      
+        .replace(/</g, "")
+        .replace(/>/g, "")
+        .replace(/&/g, "")
+        .replace(/"/g, "")
+        .replace(/'/g, "")
+        .replace(/[\n\r]/g, " ");
+
       sanitized[sanitizedKey] = this.sanitizeObject(value);
     }
     return sanitized;
