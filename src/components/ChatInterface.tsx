@@ -23,20 +23,14 @@ interface ChatInterfaceProps {
 
 // Input sanitization function
 const sanitizeInput = (input: string): string => {
-  // Remove or escape potentially dangerous characters
-  return input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
-    .trim();
+  // Trim input and perform basic cleanup
+  return input.trim();
 };
 
 // Output sanitization function
 const sanitizeOutput = (output: string): string => {
-  // Basic sanitization for display
-  return output.replace(/</g, "<").replace(/>/g, ">");
+  // No manual escaping needed as React handles it
+  return output;
 };
 
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
@@ -149,15 +143,15 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
                   <Sparkles size={14} className="text-indigo-400" />
                 </div>
               )}
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                  msg.role === "user"
-                    ? "bg-indigo-600 text-white rounded-tr-none"
-                    : "bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none"
-                }`}
-              >
-                <div>{processMessageContent(msg)}</div>
-                {msg.status === "thinking" && (
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                msg.role === 'user' 
+                  ? 'bg-indigo-600 text-white rounded-tr-none' 
+                  : 'bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none'
+              }`}>
+                <div className="whitespace-pre-wrap">
+                  {processMessageContent(msg)}
+                </div>
+                {msg.status === 'thinking' && (
                   <div className="mt-2 flex gap-1">
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce" />
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.2s]" />
