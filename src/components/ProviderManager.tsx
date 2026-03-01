@@ -152,7 +152,7 @@ const ProviderManager = () => {
       // Many LLM providers block direct browser access due to CORS
       showError(`Connection test failed: ${error.message}. Note: Browser CORS restrictions may prevent direct API calls.`);
     } finally {
-      dismissToast(toastId);
+      dismissToast(toastId as any);
     }
   };
 
