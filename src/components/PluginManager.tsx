@@ -25,12 +25,12 @@ const PluginManager = () => {
   const [newPluginUrl, setNewPluginUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const loadPlugins = () => {
+  const loadPlugins = React.useCallback(() => {
     setPlugins(getAllPlugins());
     setCommands(getCommands());
     setAgents(getAgents());
     setSkills(getSkills());
-  };
+  }, []);
 
   useEffect(() => {
     loadPlugins();
