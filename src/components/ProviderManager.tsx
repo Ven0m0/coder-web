@@ -130,10 +130,12 @@ const ProviderManager = () => {
           errorMessage = data.error?.message || response.statusText;
         }
       } else if (selectedProvider === 'cursor') {
-        // Cursor doesn't have a simple public API for browser-side connection testing
-        // Simulate a successful connection for now
+        // Cursor doesn't have a simple public API for browser-side connection testing.
+        // Simulate a connection test, but clearly indicate that the API key was not verified.
         await new Promise(resolve => setTimeout(resolve, 1000));
-        success = true;
+        showSuccess('Simulated connection to Cursor. Note: Your Cursor API key was not verified.');
+        dismissToast(toastId);
+        return;
       }
 
       if (success) {
