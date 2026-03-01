@@ -1,5 +1,5 @@
 // Example plugin for OpenCode CLI
-import { Plugin, Command, Agent, Skill } from '@/plugins/index';
+import type { Agent, Command, Plugin, Skill } from "@/plugins/index";
 
 // Example command
 const exampleCommand: Command = {
@@ -10,7 +10,7 @@ const exampleCommand: Command = {
     if (args.length > 0) {
       console.log("Arguments:", args.join(" "));
     }
-  }
+  },
 };
 
 // Example agent
@@ -19,7 +19,7 @@ const exampleAgent: Agent = {
   description: "An example agent that echoes input",
   run: async (task: string) => {
     return `Echo: ${task}`;
-  }
+  },
 };
 
 // Example skill
@@ -28,7 +28,7 @@ const exampleSkill: Skill = {
   description: "Formats text with a prefix",
   execute: async (input: string) => {
     return `[FORMATTED] ${input}`;
-  }
+  },
 };
 
 // Plugin definition
@@ -38,7 +38,7 @@ const examplePlugin: Plugin = {
   description: "An example plugin demonstrating the plugin system",
   commands: [exampleCommand],
   agents: [exampleAgent],
-  skills: [exampleSkill]
+  skills: [exampleSkill],
 };
 
 export default examplePlugin;

@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { Send, Bot, User, Sparkles, Command, Zap, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { tokenOptimizer } from '@/utils/tokenOptimizer';
-import { SecureStorage } from '@/utils/secureStorage';
+import { Bot, Command, Send, Sparkles, User, Zap } from "lucide-react";
+import type React from "react";
+import { useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { tokenOptimizer } from "@/utils/tokenOptimizer";
 
 interface Message {
-  role: 'user' | 'agent';
+  role: "user" | "agent";
   content: string;
-  status?: 'thinking' | 'executing' | 'done';
+  status?: "thinking" | "executing" | "done";
   optimized?: boolean;
 }
 
@@ -34,46 +34,45 @@ const sanitizeOutput = (output: string): string => {
 };
 
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [useOptimization, setUseOptimization] = useState(true);
   const [filterOutput, setFilterOutput] = useState(true);
-  const [showInput, setShowInput] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    
+
     // Sanitize input before processing
     const sanitizedInput = sanitizeInput(input);
-    
+
     // Optimize input if enabled
-    const optimizedInput = useOptimization 
-      ? tokenOptimizer.optimizeContent(sanitizedInput) 
+    const optimizedInput = useOptimization
+      ? tokenOptimizer.optimizeContent(sanitizedInput)
       : sanitizedInput;
-    
+
     onSendMessage(optimizedInput);
-    setInput('');
+    setInput("");
   };
 
   // Process message content for display
   const processMessageContent = (msg: Message) => {
-    if (msg.role === 'user') return msg.content;
-    
+    if (msg.role === "user") return msg.content;
+
     // For agent messages, apply filtering if enabled
     if (filterOutput && !msg.optimized) {
-      const filters = ['extra-whitespace', 'repeated-lines'];
+      const filters = ["extra-whitespace", "repeated-lines"];
       const filtered = tokenOptimizer.filterOutput(msg.content, filters);
-      return sanitizeOutput(filtered);
+      return filtered;
     }
-    
-    return sanitizeOutput(msg.content);
+
+    return msg.content;
   };
 
   // Handle paste events to sanitize pasted content
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text/plain');
+    const pastedText = e.clipboardData.getData("text/plain");
     const sanitizedText = sanitizeInput(pastedText);
     const inputElement = inputRef.current;
     if (inputElement) {
@@ -102,21 +101,23 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
             <h1 className="text-sm font-semibold">OpenCode Agent</h1>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Ready to code</span>
+              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">
+                Ready to code
+              </span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="bg-zinc-900 border-zinc-700 text-zinc-400 gap-1 cursor-pointer"
             onClick={() => setFilterOutput(!filterOutput)}
           >
             <span className={filterOutput ? "text-emerald-400" : "text-zinc-500"}>●</span>
             <span>Filter Output</span>
           </Badge>
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="bg-zinc-900 border-zinc-700 text-zinc-400 gap-1 cursor-pointer"
             onClick={() => setUseOptimization(!useOptimization)}
           >
@@ -132,8 +133,12 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
       <ScrollArea className="flex-1 px-6 py-8">
         <div className="max-w-3xl mx-auto space-y-8">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {msg.role === 'agent' && (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: messages don't have unique IDs yet
+              key={i}
+              className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {msg.role === "agent" && (
                 <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 border border-zinc-700">
                   <Sparkles size={14} className="text-indigo-400" />
                 </div>
@@ -154,12 +159,15 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
                   </div>
                 )}
                 {msg.optimized && (
-                  <Badge variant="secondary" className="mt-2 text-[9px] h-4 px-1.5 bg-zinc-700 text-zinc-300 border-none">
+                  <Badge
+                    variant="secondary"
+                    className="mt-2 text-[9px] h-4 px-1.5 bg-zinc-700 text-zinc-300 border-none"
+                  >
                     Token-optimized
                   </Badge>
                 )}
               </div>
-              {msg.role === 'user' && (
+              {msg.role === "user" && (
                 <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0">
                   <User size={14} className="text-zinc-300" />
                 </div>
@@ -170,27 +178,18 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
       </ScrollArea>
       <div className="p-6 border-t border-zinc-800 bg-[#1a1a1a]">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
-          <Input 
+          <Input
             ref={inputRef}
-            value={input} 
-            onChange={(e) => setInput(e.target.value)} 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
             onPaste={handlePaste}
-            placeholder="Ask the agent to build something..." 
-            className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0" 
+            placeholder="Ask the agent to build something..."
+            className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-14 pl-4 pr-14 rounded-xl focus-visible:ring-indigo-500 focus-visible:ring-offset-0"
           />
           <div className="absolute right-2 top-2 flex gap-1">
-            <Button 
-              type="button"
-              size="icon" 
-              variant="ghost"
-              className="h-10 w-10 text-zinc-500 hover:text-zinc-300"
-              onClick={() => setShowInput(!showInput)}
-            >
-              {showInput ? <EyeOff size={18} /> : <Eye size={18} />}
-            </Button>
-            <Button 
-              type="submit" 
-              size="icon" 
+            <Button
+              type="submit"
+              size="icon"
               className="h-10 w-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all"
             >
               <Send size={18} />
