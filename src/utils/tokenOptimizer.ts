@@ -368,9 +368,9 @@ export class TokenOptimizer {
 
     // Basic sanitization to prevent injection
     return content
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/&/g, "&")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/&/g, "&amp;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#x27;")
       .trim();
