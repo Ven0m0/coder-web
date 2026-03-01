@@ -25,9 +25,9 @@ interface ChatInterfaceProps {
 const sanitizeInput = (input: string): string => {
   // Remove or escape potentially dangerous characters
   return input
-    .replace(/</g, "<")
-    .replace(/>/g, ">")
-    .replace(/&/g, "&")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#x27;")
     .trim();
