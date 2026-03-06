@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Globe, Key, Check, ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SecureStorage } from '@/utils/secureStorage';
-import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
+import { Check, Eye, EyeOff, Globe, Key, ShieldCheck } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SecureStorage } from "@/utils/secureStorage";
+import { dismissToast, showError, showLoading, showSuccess } from "@/utils/toast";
 
 const PROVIDERS = [
   { id: "anthropic", name: "Anthropic (Claude)", icon: "https://www.anthropic.com/favicon.ico" },
@@ -69,23 +75,23 @@ const ProviderManager = () => {
     }
 
     if (!currentApiKey) {
-      showError('Please enter an API key to test the connection');
+      showError("Please enter an API key to test the connection");
       return;
     }
 
     const toastId = showLoading(`Testing connection to ${selectedProvider}...`);
 
     try {
-      console.log('Testing connection with provider:', selectedProvider);
+      console.log("Testing connection with provider:", selectedProvider);
 
       let success = false;
-      let errorMessage = '';
+      let errorMessage = "";
 
-      if (selectedProvider === 'openai') {
-        const response = await fetch('https://api.openai.com/v1/models', {
+      if (selectedProvider === "openai") {
+        const response = await fetch("https://api.openai.com/v1/models", {
           headers: {
-            'Authorization': `Bearer ${currentApiKey}`
-          }
+            Authorization: `Bearer ${currentApiKey}`,
+          },
         });
 
         if (response.ok) {
@@ -94,19 +100,19 @@ const ProviderManager = () => {
           const data = await response.json().catch(() => ({}));
           errorMessage = data.error?.message || response.statusText;
         }
-      } else if (selectedProvider === 'anthropic') {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
+      } else if (selectedProvider === "anthropic") {
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
           headers: {
-            'x-api-key': currentApiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json'
+            "x-api-key": currentApiKey,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
           },
           body: JSON.stringify({
-            model: 'claude-3-haiku-20240307',
+            model: "claude-3-haiku-20240307",
             max_tokens: 1,
-            messages: [{ role: 'user', content: 'Hello' }]
-          })
+            messages: [{ role: "user", content: "Hello" }],
+          }),
         });
 
         if (response.ok) {
@@ -115,11 +121,11 @@ const ProviderManager = () => {
           const data = await response.json().catch(() => ({}));
           errorMessage = data.error?.message || response.statusText;
         }
-      } else if (selectedProvider === 'google' || selectedProvider === 'jules') {
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      } else if (selectedProvider === "google" || selectedProvider === "jules") {
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
           headers: {
-            'x-goog-api-key': currentApiKey
-          }
+            "x-goog-api-key": currentApiKey,
+          },
         });
 
         if (response.ok) {
@@ -128,11 +134,11 @@ const ProviderManager = () => {
           const data = await response.json().catch(() => ({}));
           errorMessage = data.error?.message || response.statusText;
         }
-      } else if (selectedProvider === 'openrouter') {
-        const response = await fetch('https://openrouter.ai/api/v1/models', {
+      } else if (selectedProvider === "openrouter") {
+        const response = await fetch("https://openrouter.ai/api/v1/models", {
           headers: {
-            'Authorization': `Bearer ${currentApiKey}`
-          }
+            Authorization: `Bearer ${currentApiKey}`,
+          },
         });
 
         if (response.ok) {
@@ -141,11 +147,11 @@ const ProviderManager = () => {
           const data = await response.json().catch(() => ({}));
           errorMessage = data.error?.message || response.statusText;
         }
-      } else if (selectedProvider === 'cursor') {
+      } else if (selectedProvider === "cursor") {
         // Cursor doesn't have a simple public API for browser-side connection testing.
         // Simulate a connection test, but clearly indicate that the API key was not verified.
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        showSuccess('Simulated connection to Cursor. Note: Your Cursor API key was not verified.');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        showSuccess("Simulated connection to Cursor. Note: Your Cursor API key was not verified.");
         dismissToast(toastId);
         return;
       }
@@ -153,12 +159,14 @@ const ProviderManager = () => {
       if (success) {
         showSuccess(`Successfully connected to ${selectedProvider}!`);
       } else {
-        showError(`Connection failed: ${errorMessage || 'Unknown error'}`);
+        showError(`Connection failed: ${errorMessage || "Unknown error"}`);
       }
     } catch (error: any) {
-      console.error('Connection test failed:', error);
+      console.error("Connection test failed:", error);
       // Many LLM providers block direct browser access due to CORS
-      showError(`Connection test failed: ${error.message}. Note: Browser CORS restrictions may prevent direct API calls.`);
+      showError(
+        `Connection test failed: ${error.message}. Note: Browser CORS restrictions may prevent direct API calls.`,
+      );
     } finally {
       dismissToast(toastId as any);
     }
