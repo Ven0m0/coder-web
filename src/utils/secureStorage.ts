@@ -1,37 +1,34 @@
 // Secure storage utility using Web Crypto API
 export class SecureStorage {
-  private static readonly ENCRYPTION_KEY = 'opencode_encryption_key';
+  private static readonly ENCRYPTION_KEY = "opencode_encryption_key";
   private static cachedKeyPromise: Promise<CryptoKey> | null = null;
-  
+
   // Generate a session-based encryption key
   private static async getEncryptionKey(): Promise<CryptoKey> {
-    if (this.cachedKeyPromise) {
-      return this.cachedKeyPromise;
+    if (SecureStorage.cachedKeyPromise) {
+      return SecureStorage.cachedKeyPromise;
     }
 
-    this.cachedKeyPromise = (async () => {
-      const sessionKey = sessionStorage.getItem(this.ENCRYPTION_KEY);
+    SecureStorage.cachedKeyPromise = (async () => {
+      const sessionKey = sessionStorage.getItem(SecureStorage.ENCRYPTION_KEY);
       let keyMaterial: ArrayBuffer;
 
       if (sessionKey) {
-        const uint8Array = Uint8Array.from(atob(sessionKey), c => c.charCodeAt(0));
+        const uint8Array = Uint8Array.from(atob(sessionKey), (c) => c.charCodeAt(0));
         keyMaterial = uint8Array.buffer.slice(0);
       } else {
         const newKey = crypto.getRandomValues(new Uint8Array(32));
-        sessionStorage.setItem(this.ENCRYPTION_KEY, btoa(String.fromCharCode(...newKey)));
+        sessionStorage.setItem(SecureStorage.ENCRYPTION_KEY, btoa(String.fromCharCode(...newKey)));
         keyMaterial = newKey.buffer.slice(0);
       }
 
-      return crypto.subtle.importKey(
-        "raw",
-        keyMaterial,
-        { name: "AES-GCM" },
-        false,
-        ["encrypt", "decrypt"]
-      );
+      return crypto.subtle.importKey("raw", keyMaterial, { name: "AES-GCM" }, false, [
+        "encrypt",
+        "decrypt",
+      ]);
     })();
 
-    return this.cachedKeyPromise;
+    return SecureStorage.cachedKeyPromise;
   }
 
   // Encrypt data
