@@ -27,12 +27,6 @@ const sanitizeInput = (input: string): string => {
   return input.trim();
 };
 
-// Output sanitization function
-const sanitizeOutput = (output: string): string => {
-  // No manual escaping needed as React handles it
-  return output;
-};
-
 const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [useOptimization, setUseOptimization] = useState(true);
@@ -143,15 +137,15 @@ const ChatInterface = ({ onSendMessage, messages }: ChatInterfaceProps) => {
                   <Sparkles size={14} className="text-indigo-400" />
                 </div>
               )}
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                msg.role === 'user' 
-                  ? 'bg-indigo-600 text-white rounded-tr-none' 
-                  : 'bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none'
-              }`}>
-                <div className="whitespace-pre-wrap">
-                  {processMessageContent(msg)}
-                </div>
-                {msg.status === 'thinking' && (
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-indigo-600 text-white rounded-tr-none"
+                    : "bg-zinc-800/50 border border-zinc-800 text-zinc-300 rounded-tl-none"
+                }`}
+              >
+                <div className="whitespace-pre-wrap">{processMessageContent(msg)}</div>
+                {msg.status === "thinking" && (
                   <div className="mt-2 flex gap-1">
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce" />
                     <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.2s]" />

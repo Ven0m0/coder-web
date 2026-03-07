@@ -1,38 +1,50 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { SecureStorage } from "./secureStorage";
 
 // Mocking browser globals
-if (typeof window === 'undefined') {
+if (typeof window === "undefined") {
   global.window = {} as any;
 }
 
-if (typeof sessionStorage === 'undefined') {
+if (typeof sessionStorage === "undefined") {
   const store: Record<string, string> = {};
   global.sessionStorage = {
     getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { for (const key in store) delete store[key]; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      for (const key in store) delete store[key];
+    },
     length: 0,
     key: (index: number) => Object.keys(store)[index] || null,
   } as Storage;
 }
 
-if (typeof localStorage === 'undefined') {
-    const store: Record<string, string> = {};
-    global.localStorage = {
-      getItem: (key: string) => store[key] || null,
-      setItem: (key: string, value: string) => { store[key] = value; },
-      removeItem: (key: string) => { delete store[key]; },
-      clear: () => { for (const key in store) delete store[key]; },
-      length: 0,
-      key: (index: number) => Object.keys(store)[index] || null,
-    } as Storage;
+if (typeof localStorage === "undefined") {
+  const store: Record<string, string> = {};
+  global.localStorage = {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      for (const key in store) delete store[key];
+    },
+    length: 0,
+    key: (index: number) => Object.keys(store)[index] || null,
+  } as Storage;
 }
 
-if (typeof crypto === 'undefined') {
-    const { webcrypto } = await import('node:crypto');
-    global.crypto = webcrypto as any;
+if (typeof crypto === "undefined") {
+  const { webcrypto } = await import("node:crypto");
+  global.crypto = webcrypto as any;
 }
 
 describe("SecureStorage", () => {

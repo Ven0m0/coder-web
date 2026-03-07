@@ -2,9 +2,9 @@ import { LRUCache } from "lru-cache";
 import { decode as zonDecode, encode as zonEncode } from "zon-format";
 
 // TOON (Token-Oriented Object Notation) implementation
-export class ToonFormatter {
+export const ToonFormatter = {
   // biome-ignore lint/suspicious/noExplicitAny: generic object handling
-  static format(obj: any, schema?: Record<string, string>): string {
+  format(obj: any, schema?: Record<string, string>): string {
     if (typeof obj !== "object" || obj === null) {
       return String(obj);
     }
@@ -60,13 +60,13 @@ export class ToonFormatter {
     });
 
     return entries.join("\n");
-  }
-}
+  },
+};
 
 // ZON (Zero Overhead Notation) formatter
-export class ZonFormatter {
+export const ZonFormatter = {
   // biome-ignore lint/suspicious/noExplicitAny: generic object handling
-  static encode(obj: any): string {
+  encode(obj: any): string {
     try {
       // Sanitize object before encoding
       const sanitizedObj = ZonFormatter.sanitizeObject(obj);
@@ -76,10 +76,10 @@ export class ZonFormatter {
         `ZON encoding failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-  }
+  },
 
   // biome-ignore lint/suspicious/noExplicitAny: returns decoded object
-  static decode(zonStr: string): any {
+  decode(zonStr: string): any {
     try {
       return zonDecode(zonStr);
     } catch (error) {
@@ -87,11 +87,11 @@ export class ZonFormatter {
         `ZON decoding failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-  }
+  },
 
   // Helper to sanitize objects before encoding
   // biome-ignore lint/suspicious/noExplicitAny: recursive sanitization
-  private static sanitizeObject(obj: any): any {
+  sanitizeObject(obj: any): any {
     if (typeof obj !== "object" || obj === null) {
       return obj;
     }
@@ -108,23 +108,23 @@ export class ZonFormatter {
       sanitized[sanitizedKey] = ZonFormatter.sanitizeObject(value);
     }
     return sanitized;
-  }
-}
+  },
+};
 
 // Markdown optimizer
-export class MarkdownOptimizer {
-  static optimize(markdown: string): string {
+export const MarkdownOptimizer = {
+  optimize(markdown: string): string {
     // Remove extra whitespace and newlines
     return markdown
       .replace(/\n\s*\n\s*\n/g, "\n\n") // Reduce multiple blank lines to single blank line
       .replace(/^\s+/gm, "") // Remove leading whitespace from each line
       .trim();
-  }
-}
+  },
+};
 
 // JSON optimizer
-export class JsonOptimizer {
-  static optimize(json: string): string {
+export const JsonOptimizer = {
+  optimize(json: string): string {
     try {
       const obj = JSON.parse(json);
       // Sanitize before minifying
@@ -135,11 +135,11 @@ export class JsonOptimizer {
       // If not valid JSON, return as is
       return json;
     }
-  }
+  },
 
   // Helper to sanitize objects
   // biome-ignore lint/suspicious/noExplicitAny: recursive sanitization
-  private static sanitizeObject(obj: any): any {
+  sanitizeObject(obj: any): any {
     if (typeof obj !== "object" || obj === null) {
       return obj;
     }
@@ -156,12 +156,12 @@ export class JsonOptimizer {
       sanitized[sanitizedKey] = JsonOptimizer.sanitizeObject(value);
     }
     return sanitized;
-  }
-}
+  },
+};
 
 // Output filter for LLM responses
-export class OutputFilter {
-  static filter(text: string, filters: string[]): string {
+export const OutputFilter = {
+  filter(text: string, filters: string[]): string {
     // Remove specified patterns from output
     let filtered = text;
     for (const filter of filters) {
@@ -189,8 +189,8 @@ export class OutputFilter {
       }
     }
     return filtered.trim();
-  }
-}
+  },
+};
 
 // Caching mechanism
 export class TokenCache {
@@ -244,19 +244,19 @@ export class TokenOptimizer {
       // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
-    let optimized = content;
-    
+
+    let optimized = this.prepareContent(content);
+
     switch (type) {
-      case 'markdown':
+      case "markdown":
         optimized = MarkdownOptimizer.optimize(content);
         break;
-      case 'json':
+      case "json":
         optimized = JsonOptimizer.optimize(content);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = content.replace(/\s+/g, ' ').trim();
+        optimized = content.replace(/\s+/g, " ").trim();
     }
 
     this.cache.set(cacheKey, optimized);
@@ -281,7 +281,7 @@ export class TokenOptimizer {
       return toon;
     } catch {
       // Return sanitized original if parsing fails
-      return this.sanitizeContent(json);
+      return this.prepareContent(json);
     }
   }
 
@@ -337,8 +337,8 @@ export class TokenOptimizer {
       // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
-    const filtered = OutputFilter.filter(output, filters);
+
+    const filtered = OutputFilter.filter(this.prepareContent(output), filters);
     this.cache.set(cacheKey, filtered);
     return filtered;
   }
@@ -356,18 +356,12 @@ export class TokenOptimizer {
     this.cache.clear();
   }
 
-  // Content sanitization helper
-  private sanitizeContent(content: string): string {
+  // Content preparation helper
+  private prepareContent(content: string): string {
     if (typeof content !== "string") return String(content);
 
-    // Basic sanitization to prevent injection
-    return content
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#x27;")
-      .trim();
+    // Let React handle HTML escaping to prevent double-escaping issues
+    return content.trim();
   }
 
   // Object sanitization helper

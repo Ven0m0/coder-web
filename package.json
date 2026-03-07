@@ -8,7 +8,7 @@
     "build": "bun build --outdir=dist src/main.tsx",
     "preview": "bun run dist/main.js",
     "lint": "biome check src/",
-    "lint:fix": "biome check --apply src/",
+    "lint:fix": "biome check --write src/",
     "format": "biome format src/ --write",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
@@ -68,7 +68,7 @@
     "zon-format": "^1.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.0.0",
+    "@biomejs/biome": "^2.4.6",
     "@dyad-sh/react-vite-component-tagger": "^0.8.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^25.0.0",

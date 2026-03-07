@@ -10,29 +10,33 @@ mock.module("lru-cache", () => {
       constructor(options: any) {
         this.max = options.max;
       }
-      get(key: string) { return this.cache.get(key); }
+      get(key: string) {
+        return this.cache.get(key);
+      }
       set(key: string, value: any) {
         this.cache.set(key, value);
         this.size = this.cache.size;
       }
-      has(key: string) { return this.cache.has(key); }
+      has(key: string) {
+        return this.cache.has(key);
+      }
       clear() {
         this.cache.clear();
         this.size = 0;
       }
-    }
+    },
   };
 });
 
 mock.module("zon-format", () => {
   return {
     encode: (obj: any) => JSON.stringify(obj),
-    decode: (str: string) => JSON.parse(str)
+    decode: (str: string) => JSON.parse(str),
   };
 });
 
-import { expect, test, describe, spyOn, beforeEach } from "bun:test";
-import { TokenOptimizer, MarkdownOptimizer, JsonOptimizer } from "./tokenOptimizer";
+import { beforeEach, describe, expect, spyOn, test } from "bun:test";
+import { JsonOptimizer, MarkdownOptimizer, TokenOptimizer } from "./tokenOptimizer";
 
 describe("TokenOptimizer.optimizeContent", () => {
   let optimizer: TokenOptimizer;
@@ -48,27 +52,23 @@ describe("TokenOptimizer.optimizeContent", () => {
       expect(optimizer.optimizeContent(input, "text")).toBe(expected);
     });
 
-    test("should apply sanitization", () => {
+    test("should apply preparation without double-escaping HTML", () => {
       const input = 'Alert("hello") & <script>';
-      // " -> &quot;
-      // ' -> &#x27;
-      // & -> &
-      // < -> <
-      // > -> >
-      const expected = 'Alert(&quot;hello&quot;) & <script>';
+      // Should not escape HTML as React handles it
+      const expected = 'Alert("hello") & <script>';
       expect(optimizer.optimizeContent(input, "text")).toBe(expected);
     });
   });
 
   describe("Markdown Optimization", () => {
-    test("should call MarkdownOptimizer.optimize and sanitize input", () => {
+    test("should call MarkdownOptimizer.optimize and prepare input", () => {
       const spy = spyOn(MarkdownOptimizer, "optimize");
-      const input = "  # Title  \n\n\n  Content with \"quotes\"  ";
+      const input = '  # Title  \n\n\n  Content with "quotes"  ';
 
       const result = optimizer.optimizeContent(input, "markdown");
 
       expect(spy).toHaveBeenCalled();
-      expect(result).toContain("&quot;quotes&quot;");
+      expect(result).toContain('"quotes"');
       expect(result).not.toContain("\n\n\n");
 
       spy.mockRestore();
@@ -76,25 +76,24 @@ describe("TokenOptimizer.optimizeContent", () => {
   });
 
   describe("JSON Optimization", () => {
-    test("should call JsonOptimizer.optimize but currently it fails to parse due to prior sanitization", () => {
+    test("should call JsonOptimizer.optimize successfully with raw JSON", () => {
       const spy = spyOn(JsonOptimizer, "optimize");
       const input = '  {"key":   "value with <tags>"}  ';
 
       const result = optimizer.optimizeContent(input, "json");
 
       expect(spy).toHaveBeenCalled();
-      // Current behavior: sanitizeContent replaces " with &quot;,
-      // which makes JSON.parse fail in JsonOptimizer.optimize.
-      // So it returns the sanitized string as is.
-      expect(result).toBe('{&quot;key&quot;:   &quot;value with <tags>&quot;}');
+      // Current behavior: preparation simply trims, so JSON parsing succeeds
+      expect(result).toBe('{"key":"value with <tags>"}');
 
       spy.mockRestore();
     });
 
-    test("should return original content (sanitized) if JSON is invalid", () => {
+    test("should return original content (prepared) if JSON is invalid", () => {
       const input = '{"invalid": json';
       const result = optimizer.optimizeContent(input, "json");
-      expect(result).toBe('{&quot;invalid&quot;: json');
+      // JSON Optimizer strips newlines and extra spaces if invalid
+      expect(result).toBe('{"invalid": json');
     });
   });
 

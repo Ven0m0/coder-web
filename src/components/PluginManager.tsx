@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, CheckCircle, Package, Play, Plus, Trash2, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,13 @@ import {
 } from "@/plugins/index";
 
 const PluginManager = () => {
+  // biome-ignore lint/suspicious/noExplicitAny: varied plugin entity structures
   const [plugins, setPlugins] = useState<any[]>([]);
+  // biome-ignore lint/suspicious/noExplicitAny: varied plugin entity structures
   const [commands, setCommands] = useState<any[]>([]);
+  // biome-ignore lint/suspicious/noExplicitAny: varied plugin entity structures
   const [agents, setAgents] = useState<any[]>([]);
+  // biome-ignore lint/suspicious/noExplicitAny: varied plugin entity structures
   const [skills, setSkills] = useState<any[]>([]);
   const [newPluginUrl, setNewPluginUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,8 +38,7 @@ const PluginManager = () => {
 
   useEffect(() => {
     loadPlugins();
-    // biome-ignore lint/correctness/useExhaustiveDependencies: loadPlugins is stable but not a hook dependency
-  }, []);
+  }, [loadPlugins]);
 
   const handleAddPlugin = async () => {
     if (!newPluginUrl) return;
