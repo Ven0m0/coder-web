@@ -48,7 +48,7 @@ const MCPManager = () => {
   const addServer = () => {
     if (!newName || !newCommand) return;
     const server: MCPServer = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
       name: newName,
       runtime: newRuntime,
       command: newCommand,

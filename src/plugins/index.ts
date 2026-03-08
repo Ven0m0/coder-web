@@ -108,20 +108,6 @@ const verifyPluginSignature = async (pluginPath: string, pluginCode: string): Pr
   return hashHex === expectedSignature;
 };
 
-// Content Security Policy for plugin sandboxing
-const _createPluginCSP = () => {
-  return `
-    default-src 'none';
-    script-src 'self';
-    style-src 'self';
-    img-src 'self' data:;
-    font-src 'self';
-    connect-src 'self';
-    frame-src 'none';
-    object-src 'none';
-  `;
-};
-
 // Secure plugin loader using Web Workers for sandboxing
 export async function loadPluginSecure(pluginPath: string, persist = false): Promise<void> {
   // biome-ignore lint/suspicious/noAsyncPromiseExecutor: Promise executor needs to be async for await operations
@@ -258,12 +244,6 @@ export async function loadPluginSecure(pluginPath: string, persist = false): Pro
       reject(error);
     }
   });
-}
-
-// Deprecated function - kept for backward compatibility but shows warning
-export async function loadPlugin(pluginPath: string): Promise<void> {
-  console.warn("loadPlugin is deprecated. Use loadPluginSecure instead.");
-  return loadPluginSecure(pluginPath);
 }
 
 export function getPlugin(name: string): Plugin | undefined {

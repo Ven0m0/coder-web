@@ -2,7 +2,7 @@
 const ENCRYPTION_KEY = "opencode_encryption_key";
 let cachedKeyPromise: Promise<CryptoKey> | null = null;
 
-// Generate a session-based encryption key
+// Generate a session-based encryption key (module-private)
 async function getEncryptionKey(): Promise<CryptoKey> {
   if (cachedKeyPromise) {
     return cachedKeyPromise;
@@ -31,9 +31,6 @@ async function getEncryptionKey(): Promise<CryptoKey> {
 }
 
 export const SecureStorage = {
-  // Generate a session-based encryption key (exposed for testing/initialization)
-  getEncryptionKey,
-
   // Encrypt data
   async encrypt(data: string): Promise<string> {
     const key = await getEncryptionKey();
@@ -96,6 +93,6 @@ export const SecureStorage = {
 // Initialize encryption key on module load
 (() => {
   if (typeof window !== "undefined" && window.crypto) {
-    SecureStorage.getEncryptionKey();
+    getEncryptionKey();
   }
 })();
