@@ -1,15 +1,15 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 // Mocking the sanitizeLog function from src/components/Terminal.tsx
 const sanitizeLog = (log: string): string => {
   return log
-    .replace(/(sk-(?:[a-zA-Z0-9]{20,}))/g, 'sk-***')
-    .replace(/(\/[^\s]*\/(?:home|users|root)\/[^\s]*)/gi, '/***')
-    .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '***@***.***')
-    .replace(/(\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b)/g, '***.***.***.***')
-    .replace(/(password\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'password=***')
-    .replace(/(token\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'token=***')
-    .replace(/(key\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, 'key=***');
+    .replace(/(sk-(?:[a-zA-Z0-9]{20,}))/g, "sk-***")
+    .replace(/(\/[^\s]*\/(?:home|users|root)\/[^\s]*)/gi, "/***")
+    .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, "***@***.***")
+    .replace(/(\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b)/g, "***.***.***.***")
+    .replace(/(password\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, "password=***")
+    .replace(/(token\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, "token=***")
+    .replace(/(key\s*[=:]\s*['"]?[^'"\s]+['"]?)/gi, "key=***");
 };
 
 // Mocking the sanitizeInput function from src/components/ChatInterface.tsx

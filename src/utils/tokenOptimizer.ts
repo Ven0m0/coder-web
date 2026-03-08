@@ -244,19 +244,19 @@ export class TokenOptimizer {
       // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     let optimized = content;
-    
+
     switch (type) {
-      case 'markdown':
+      case "markdown":
         optimized = MarkdownOptimizer.optimize(content);
         break;
-      case 'json':
+      case "json":
         optimized = JsonOptimizer.optimize(content);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = content.replace(/\s+/g, ' ').trim();
+        optimized = content.replace(/\s+/g, " ").trim();
     }
 
     this.cache.set(cacheKey, optimized);
@@ -337,7 +337,7 @@ export class TokenOptimizer {
       // biome-ignore lint/style/noNonNullAssertion: checked with has()
       return this.cache.get(cacheKey)!;
     }
-    
+
     const filtered = OutputFilter.filter(output, filters);
     this.cache.set(cacheKey, filtered);
     return filtered;
