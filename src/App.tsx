@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { initializePlugins, loadPlugin } from "@/plugins/index";
+import { initializePlugins, loadPluginSecure } from "@/plugins/index";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -16,7 +16,7 @@ const App = () => {
     initializePlugins();
 
     // Load example plugin on app start
-    loadPlugin("./plugins/example-plugin");
+    loadPluginSecure("./plugins/example-plugin");
   }, []);
 
   return (

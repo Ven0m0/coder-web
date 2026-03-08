@@ -249,14 +249,14 @@ export class TokenOptimizer {
 
     switch (type) {
       case "markdown":
-        optimized = MarkdownOptimizer.optimize(content);
+        optimized = MarkdownOptimizer.optimize(optimized);
         break;
       case "json":
-        optimized = JsonOptimizer.optimize(content);
+        optimized = JsonOptimizer.optimize(optimized);
         break;
       default:
         // For plain text, just remove extra whitespace
-        optimized = content.replace(/\s+/g, " ").trim();
+        optimized = optimized.replace(/\s+/g, " ").trim();
     }
 
     this.cache.set(cacheKey, optimized);
