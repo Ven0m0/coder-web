@@ -102,10 +102,12 @@ export class ZonFormatter {
 
     // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Sanitize key
-      const sanitizedKey = key.replace(/[\n\r]/g, " ");
-      sanitized[sanitizedKey] = ZonFormatter.sanitizeObject(value);
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // Sanitize key
+        const sanitizedKey = key.replace(/[\n\r]/g, " ");
+        sanitized[sanitizedKey] = ZonFormatter.sanitizeObject(obj[key]);
+      }
     }
     return sanitized;
   }
@@ -150,10 +152,12 @@ export class JsonOptimizer {
 
     // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Sanitize key
-      const sanitizedKey = key.replace(/[\n\r]/g, " ");
-      sanitized[sanitizedKey] = JsonOptimizer.sanitizeObject(value);
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // Sanitize key
+        const sanitizedKey = key.replace(/[\n\r]/g, " ");
+        sanitized[sanitizedKey] = JsonOptimizer.sanitizeObject(obj[key]);
+      }
     }
     return sanitized;
   }
@@ -383,17 +387,19 @@ export class TokenOptimizer {
 
     // biome-ignore lint/suspicious/noExplicitAny: dynamic object creation
     const sanitized: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Sanitize key
-      const sanitizedKey = key
-        .replace(/</g, "")
-        .replace(/>/g, "")
-        .replace(/&/g, "")
-        .replace(/"/g, "")
-        .replace(/'/g, "")
-        .replace(/[\n\r]/g, " ");
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // Sanitize key
+        const sanitizedKey = key
+          .replace(/</g, "")
+          .replace(/>/g, "")
+          .replace(/&/g, "")
+          .replace(/"/g, "")
+          .replace(/'/g, "")
+          .replace(/[\n\r]/g, " ");
 
-      sanitized[sanitizedKey] = this.sanitizeObject(value);
+        sanitized[sanitizedKey] = this.sanitizeObject(obj[key]);
+      }
     }
     return sanitized;
   }
