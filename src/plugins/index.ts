@@ -246,12 +246,6 @@ export async function loadPluginSecure(pluginPath: string, persist = false): Pro
   });
 }
 
-// Deprecated function - kept for backward compatibility but shows warning
-export async function loadPlugin(pluginPath: string): Promise<void> {
-  console.warn("loadPlugin is deprecated. Use loadPluginSecure instead.");
-  return loadPluginSecure(pluginPath);
-}
-
 export function getPlugin(name: string): Plugin | undefined {
   return plugins.get(name)?.plugin;
 }
