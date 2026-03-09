@@ -85,7 +85,7 @@ const Index = () => {
 
     // Simulate agent processing with sanitized logs
     setTimeout(() => {
-      setLogs((prev) => [...prev, `Executing search for: "${tokenOptimizer.sanitizeContent(content.substring(0, 30))}"...`]);
+      setLogs((prev) => [...prev, `Executing search for: "${content.substring(0, 30)}..."`]);
       setLogs((prev) => [...prev, "Found relevant files in src/components/"]);
 
       setTimeout(() => {
