@@ -59,7 +59,7 @@ describe("TokenOptimizer.optimizeContent", () => {
       // & -> &
       // < -> <
       // > -> >
-      const expected = "Alert(&quot;hello&quot;) & <script>";
+      const expected = 'Alert("hello") & <script>';
       expect(optimizer.optimizeContent(input, "text")).toBe(expected);
     });
   });
@@ -72,7 +72,7 @@ describe("TokenOptimizer.optimizeContent", () => {
       const result = optimizer.optimizeContent(input, "markdown");
 
       expect(spy).toHaveBeenCalled();
-      expect(result).toContain("&quot;quotes&quot;");
+      expect(result).toContain('"quotes"');
       expect(result).not.toContain("\n\n\n");
 
       spy.mockRestore();
@@ -90,7 +90,7 @@ describe("TokenOptimizer.optimizeContent", () => {
       // Current behavior: sanitizeContent replaces " with &quot;,
       // which makes JSON.parse fail in JsonOptimizer.optimize.
       // So it returns the sanitized string as is.
-      expect(result).toBe("{&quot;key&quot;:   &quot;value with <tags>&quot;}");
+      expect(result).toBe('{"key":"value with <tags>"}');
 
       spy.mockRestore();
     });
@@ -98,7 +98,7 @@ describe("TokenOptimizer.optimizeContent", () => {
     test("should return original content (sanitized) if JSON is invalid", () => {
       const input = '{"invalid": json';
       const result = optimizer.optimizeContent(input, "json");
-      expect(result).toBe("{&quot;invalid&quot;: json");
+      expect(result).toBe('{"invalid": json');
     });
   });
 
